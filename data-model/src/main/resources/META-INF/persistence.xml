@@ -1,0 +1,20 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+    http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd" version="2.0">
+
+  <persistence-unit name="requirements" transaction-type="RESOURCE_LOCAL">
+    <description>OrthoTrak Persistence Unit</description>
+    <provider>org.apache.openjpa.persistence.PersistenceProviderImpl</provider>
+
+    <!-- Package classes -->
+    <class>com.datsystems.requirements.model.Requirement</class>
+    <class>com.datsystems.requirements.model.Baseline</class>
+    
+    <exclude-unlisted-classes>true</exclude-unlisted-classes>
+    <properties>
+      <property name="openjpa.jdbc.SynchronizeMappings" value="buildSchema" />
+      <property name="openjpa.Log" value="DefaultLevel=INFO, Tool=INFO" />
+    </properties>
+  </persistence-unit>
+
+</persistence>

@@ -1,0 +1,27 @@
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+  xmlns:jpa="http://aries.apache.org/xmlns/jpa/v1.1.0">
+  <!-- Provide context -->
+  <bean id="contextMapping" class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultHttpContextMapping">
+    <property name="httpContextId" value="requirements"/>
+  </bean>
+  <service ref="contextMapping" interface="org.ops4j.pax.web.extender.whiteboard.HttpContextMapping" />
+  
+  <bean id="resourceMapping" class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
+    <property name="alias" value="/requirements" />
+    <property name="path" value="www" />
+    <property name="httpContextId" value="requirements"/>
+  </bean>
+  <service ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping" />
+  
+  <reference id="httpService" interface="org.osgi.service.http.HttpService"/>
+  <reference-list id="ws" interface="com.datsystems.ortho.api.IWebService" member-type="service-object"/>
+  
+  <!-- OrthoTrak Web Service -->
+  <bean id="orthoWebapp" class="com.datsystems.ortho.webapp.OrthoWebSocket" init-method="initialize" destroy-method="destroy">
+    <property name="webServices" ref="ws"/>
+    <property name="path" value="/www"/>
+    <property name="alias" value="/requirements-servlet"/>
+    <property name="welcomeFile" value="/requirements/index.html"/>
+    <property name="httpService" ref="httpService"/>
+  </bean>
+</blueprint>
