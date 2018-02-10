@@ -7,4 +7,11 @@
   </parent>
   <artifactId>back-end</artifactId>
   <name>Chanter Back-End</name>
+  <dependencies>
+    <dependency>
+      <groupId>com.datsystems.chanter</groupId>
+      <artifactId>data-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
 </project>
