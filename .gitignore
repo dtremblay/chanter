@@ -2,6 +2,9 @@
 *.class
 .project
 .settings
+.classpath
+.project
+*/target/*
 
 # Log file
 *.log

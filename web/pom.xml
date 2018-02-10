@@ -5,22 +5,12 @@
     <artifactId>chanter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>ortho-requirements-web</artifactId>
+  <artifactId>web</artifactId>
   <name>Web Resources for Requirements</name>
   
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Export-Package></Export-Package>
-            <Import-Package>com.datsystems.ortho.api,*</Import-Package>
-          </instructions>
-        </configuration>
-      </plugin>
+      
     </plugins>
   </build>
 </project>

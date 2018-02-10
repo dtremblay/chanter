@@ -4,21 +4,7 @@
     <groupId>com.datsystems.chanter</groupId>
     <artifactId>chanter</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <relativePath>..</relativePath>
   </parent>
-  <artifactId>data-model</artifactId>
-  <name>Requirements Data Model</name>
-  
-  <dependencies>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-    </dependency>
-  </dependencies>
-  
-   <build>
-    <plugins>
-      
-    </plugins>
-  </build>
+  <artifactId>back-end</artifactId>
+  <name>Chanter Back-End</name>
 </project>
