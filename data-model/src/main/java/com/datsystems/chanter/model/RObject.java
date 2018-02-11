@@ -27,7 +27,7 @@ public class RObject {
   /**
    * Disable the empty constructor
    */
-  private RObject() {}
+  public RObject() {}
   
   /**
    * Simple constructor with only text supplied
@@ -71,6 +71,9 @@ public class RObject {
   }
   public String getType() {
     return type;
+  }
+  public void setText(String text) {
+    this.text = text;
   }
   public String getText() {
     return text;

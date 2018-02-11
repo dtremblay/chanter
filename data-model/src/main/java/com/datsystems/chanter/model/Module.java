@@ -21,9 +21,9 @@ public class Module {
   private List<Baseline> baselines;
   
   /**
-   * Don't allow the empty constructor.
+   * We need a default constructor to allow serialization and deserialization to work.
    */
-  private Module() {}
+  public Module() {}
   
   /**
    * Default constructor.
@@ -42,10 +42,16 @@ public class Module {
     return guid;
   }
 
+  public void setName(String name) {
+    this.name = name;
+  }
   public String getName() {
     return name;
   }
 
+  public void setDescription(String description) {
+    this.description = description;
+  }
   public String getDescription() {
     return description;
   }
