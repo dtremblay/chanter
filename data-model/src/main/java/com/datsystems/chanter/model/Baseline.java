@@ -1,5 +1,6 @@
 package com.datsystems.chanter.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -21,4 +22,13 @@ public class Baseline {
   Boolean locked = false;
   List<RObject> rObjects;
   Properties attributes;
+  
+  public Baseline(String description) {
+    this.description = description;
+    rObjects = new ArrayList<>();
+  }
+  
+  public List<RObject> getRObjects() {
+    return rObjects;
+  }
 }

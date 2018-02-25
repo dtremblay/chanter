@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>com.datsystems.chanter</groupId>
@@ -6,11 +7,39 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <artifactId>web</artifactId>
-  <name>Web Resources for Requirements</name>
-  
+  <name>Web Resources for Chanter</name>
+  <properties>
+    <mw.version>1.2.0</mw.version>
+    <frontend.base>src/main/resources</frontend.base>
+  </properties>
+  <dependencies>
+    <!-- Use Meecrowave to deploy the resource. This is an attempt at decoupling the front-end from the 
+      back-end. -->
+    <dependency>
+      <groupId>org.apache.meecrowave</groupId>
+      <artifactId>meecrowave-core</artifactId>
+      <version>${mw.version}</version>
+    </dependency>
+  </dependencies>
+
   <build>
+    <resources>
+      <resource>
+        <directory>${frontend.base}</directory>
+      </resource>
+    </resources>
     <plugins>
-      
+      <plugin>
+        <groupId>org.apache.meecrowave</groupId>
+        <artifactId>meecrowave-maven-plugin</artifactId>
+        <version>${mw.version}</version>
+        <configuration>
+          <webResourceCached>false</webResourceCached>
+          <webapp>${frontend.base}/www</webapp>
+          <httpPort>8081</httpPort>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
+
 </project>

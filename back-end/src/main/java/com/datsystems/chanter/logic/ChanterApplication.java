@@ -7,12 +7,14 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
 
@@ -68,7 +70,7 @@ public class ChanterApplication {
     Module m = getModuleById(id);
     if (m != null) {
       for (RObject r : m.getrObjects()) {
-        if (r.getGuid().equals(rid)) {
+        if (r.getGuid().equals(rid) && !r.getDeleted()) {
           return r;
         }
       }
@@ -82,10 +84,37 @@ public class ChanterApplication {
   public RObject createRequirementInModule(@PathParam("id") String id, RObject r) {
     Module m = getModuleById(id);
     if (m != null) {
-      RObject newReq = new RObject(r.getText());
-      m.getrObjects().add(newReq);
-      return newReq;
+      m.addRequirement(r);
+      return r;
     }
     throw new WebApplicationException(Response.Status.NOT_FOUND);
   }
+  
+  @POST
+  @Consumes("application/json")
+  @Path("{id}/baselines")
+  public Baseline createBaseline(@PathParam("id") String id, String description) {
+    Module m = getModuleById(id);
+    if (m != null) {
+      Baseline b = new Baseline(description);
+      m.addBaseline(b);
+      return b;
+    }
+    throw new WebApplicationException(Response.Status.NOT_FOUND);
+  }
+  
+  @PUT
+  @Consumes("application/json")
+  @Path("{id}/requirements")
+  public RObject updateRequirementInModule(@PathParam("id") String id, RObject r) {
+    Module m = getModuleById(id);
+    if (m != null) {
+      RObject oldR = getRequirementByIdForModule(id, r.getGuid());
+      oldR.setDeleted(true);
+      m.getrObjects().add(r);
+      return r;
+    }
+    throw new WebApplicationException(Response.Status.NOT_FOUND);
+  }
+  
 }

@@ -63,6 +63,9 @@ public class RObject {
   public Boolean getDeleted() {
     return deleted;
   }
+  public void setDeleted(Boolean value) {
+    this.deleted = value;
+  }
   public Date getCreated() {
     return created;
   }
@@ -81,6 +84,7 @@ public class RObject {
   public Properties getAttributes() {
     return attributes;
   }
-
-  
+  public void setAttribute(String key, String value) {
+    attributes.put(key,  value);
+  }
 }
