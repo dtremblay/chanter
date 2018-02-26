@@ -39,12 +39,12 @@
   const router = new VueRouter({
     routes: [
       { path: '/', component: { template: '<div>Home</div>'} },
-      { path: '/modules/:id',
-        component: { template: '<div><div>Module: {{ $route.params.id }} </div></div>'} 
-      },
-      { path: '/modules/:id/baselines/:rid',
-        component: { template: '<div><div>Module: {{ $route.params.id }} </div><div>Baseline: {{ $route.params.rid }} </div></div>'} 
-      },
+      { path: '/modules/:moduleId',
+        component: { props: ['moduleId'], template: '<div><div>Module: {{ moduleId }} </div></div>'},
+        props: true },
+      { path: '/modules/:moduleId/baselines/:baselineId',
+        component: { props: ['moduleId','baselineId'], template: '<div><div>Module: {{ moduleId }} </div><div>Baseline: {{ baselineId }} </div></div>'}, 
+        props: true },
       { path: '/about', component: { template: '<div>About</div>'} }
     ]
   });

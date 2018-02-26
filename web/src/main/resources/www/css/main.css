@@ -15,7 +15,7 @@
   padding-top: 20px;
 }
 /* Style the sidenav links and the dropdown button */
-.sidenav a, .dropdown-btn {
+.sidenav a {
   padding: 6px 8px 6px 16px;
   text-decoration: none;
   font-size: 20px;
@@ -31,6 +31,9 @@
 /* On mouse-over */
 .sidenav a:hover {
   color: #f1f1f1;
+}
+.sidenav .router-link-exact-active {
+  color: green;
 }
 .submenu a {
 	padding-left: 30px;
