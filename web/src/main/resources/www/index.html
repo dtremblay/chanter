@@ -7,41 +7,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="./libs/bootstrap-3.3.7-dist/css/bootstrap.min.css">
-<link rel="styleSheet" href="./css/main.css"/>
+<link rel="styleSheet" href="./css/main.css" />
 <script src="./libs/vue.js" type="text/javascript"></script>
+<script src="./libs/vue-router.js" type="text/javascript"></script>
 </head>
 
 <body>
+  <div id="app">
   <div class="sidenav">
-    <a href="#home"><span class="glyphicon glyphicon-home"></span> Home</a>
-    <a href="#mod1"><span class="glyphicon glyphicon-plus" v-onclick="toggle()"></span> Module 1</a>
-    <a href="#mod2"><span class="glyphicon glyphicon-minus" v-onclick="toggle()"></span> Module 2</a>
+    <!-- What I really want here is to display the routes for each modules -->
+    <router-link to="/"><span class="glyphicon glyphicon-home"></span> Home</router-link> 
+    <router-link to="/modules/id1"><span class="glyphicon glyphicon-plus"></span> Module 1</router-link> 
+    <router-link to="/modules/id2"><span class="glyphicon glyphicon-minus"></span> Module 2</router-link>
     <div class="submenu">
-      <a href="#mod2/bl1"><span class="glyphicon glyphicon-asterisk"></span> Baseline 1</a>
-      <a href="#mod2/bl2"><span class="glyphicon glyphicon-asterisk"></span> Baseline 2</a>
-      <a href="#mod2/current"><span class="glyphicon glyphicon-asterisk"></span> Current</a>
+      <!-- Display the baselines for module 2 here -->
+      <router-link to="/modules/id2/baselines/bl1">
+        <span class="glyphicon glyphicon-asterisk"></span> Baseline 1</router-link>
+      <router-link to="/modules/id2/baselines/bl2">
+        <span class="glyphicon glyphicon-asterisk"></span> Baseline 2</router-link>
+      <router-link to="/modules/id2/baselines/current">
+        <span class="glyphicon glyphicon-asterisk"></span> Current</router-link>
     </div>
   </div>
   <div class="main">
-	  <h1>Chanter Requirements Management System</h1>
-	  <div id="app">
-		  <ul>
-		    <li v-for="number in filterPositive(numbers)">{{ number }}</li>
-		  </ul>
-	  </div>
-	</div>
+    <h1>Chanter Requirements Management System</h1>
+    <router-view></router-view>
+  </div>
+  </div>
 </body>
 <script>
+  const router = new VueRouter({
+    routes: [
+      { path: '/', component: { template: '<div>Home</div>'} },
+      { path: '/modules/:id',
+        component: { template: '<div><div>Module: {{ $route.params.id }} </div></div>'} 
+      },
+      { path: '/modules/:id/baselines/:rid',
+        component: { template: '<div><div>Module: {{ $route.params.id }} </div><div>Baseline: {{ $route.params.rid }} </div></div>'} 
+      },
+      { path: '/about', component: { template: '<div>About</div>'} }
+    ]
+  });
+  
   new Vue({
-    el: '#app',
-    data: {
-      numbers: [-5, 0, 2, -1, 1, 0.5]
-    },
-    methods: {
-      filterPositive(numbers) {
-        return numbers.filter((number) => number >= 0);
-      }
-    }
+    el:'#app',
+    router
   });
 </script>
 </html>
