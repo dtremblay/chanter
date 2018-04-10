@@ -18,7 +18,7 @@ import java.util.UUID;
 public class Module {
   
   public enum AttributeType {
-    STRING, NUMBER, LIST
+    STRING, NUMBER, LIST, BOOLEAN
   }
   private String guid;
   private String name;
@@ -63,6 +63,13 @@ public class Module {
   public String getDescription() {
     return description;
   }
+  
+  /**
+   * Add a baseline to the module.
+   * Assign all current non-deleted requirements to the baseline.
+   * 
+   * @param b
+   */
   public void addBaseline(Baseline b) {
     baselines.add(b);
     for (RObject r: rObjects) {
@@ -75,7 +82,7 @@ public class Module {
   public List<RObject> getrObjects() {
     return rObjects;
   }
-
+  
   public List<Baseline> getBaselines() {
     return baselines;
   }
@@ -84,13 +91,24 @@ public class Module {
     return attributeTypes;
   }
   
+  /**
+   * Modules have attributes.
+   * @param name
+   * @param type
+   */
   public void addAttribute(String name, AttributeType type) {
     attributeTypes.put(name, type);
   }
+  
   public RObject addRequirement(RObject r) {
     RObject newR = new RObject(r);
+    // Whenever a new requirement is added, copy its attributes
     for (String key :attributeTypes.keySet()) {
-      newR.setAttribute(key, "");
+      if (newR.getAttributes() != null && newR.getAttributes().containsKey(key)) {
+        newR.setAttribute(key, newR.getAttributes().get(key));
+      } else {
+        newR.setAttribute(key, "");
+      }
     }
     getrObjects().add(newR);
     return newR;

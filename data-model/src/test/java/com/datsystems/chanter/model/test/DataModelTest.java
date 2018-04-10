@@ -1,6 +1,10 @@
 package com.datsystems.chanter.model.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.List;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -27,8 +31,23 @@ public class DataModelTest {
     Module m1 = new Module("my module", "module description");
     m1.addAttribute("category", AttributeType.STRING);
     RObject r = new RObject("test requirement");
-    r = m1.addRequirement(r);
     r.setAttribute("category", "my category");
+    
+    r = m1.addRequirement(r);
     m1.addBaseline(new Baseline("baseline 1"));
+    
+    // Check that all our properties and attributes are present
+    List<RObject> rChecks = m1.getrObjects();
+    // Find our object
+    boolean found = false;
+    for (RObject rc : rChecks) {
+      if (rc.getGuid().equals(r.getGuid())) {
+        found = true;
+        Map<String, String> props = rc.getAttributes();
+        String category = props.get("category");
+        assertEquals("my category", category);
+      }
+    }
+    assertTrue(found);
   }
 }

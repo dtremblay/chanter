@@ -2,9 +2,11 @@ package com.datsystems.chanter.logic;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -16,10 +18,11 @@ import javax.ws.rs.core.Response;
 
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
+import com.datsystems.chanter.model.Module.AttributeType;
 import com.datsystems.chanter.model.RObject;
 
 /**
- * Current concept is that the data is held in memory.
+ * Current concept is that the data is held in memory until we develop the database connector.
  * @author daniel
  *
  */
@@ -117,4 +120,33 @@ public class ChanterApplication {
     throw new WebApplicationException(Response.Status.NOT_FOUND);
   }
   
+  @GET
+  @Path("{id}/attributes")
+  public Map<String, AttributeType> getAttributes(@PathParam("id") String id) {
+    Module m = getModuleById(id);
+    return m.getAttributes();
+  }
+  @POST
+  @Path("{id}/attributes/{attName}")
+  public void saveAttribute(@PathParam("id") String id, @PathParam("attName") String attName, String type) {
+    Module m = getModuleById(id);
+    if (m != null) {
+      AttributeType attrType = AttributeType.valueOf(type);
+      m.addAttribute(attName, attrType);
+    }
+  }
+  
+  @DELETE
+  @Path("{id}/attributes/{attName}")
+  public void deleteAttribute(@PathParam("id") String id, @PathParam("attName") String attName) {
+    Module m = getModuleById(id);
+    if (m != null) {
+      Map<String, AttributeType> attrs = m.getAttributes();
+      if (attrs.containsKey(attName)) {
+        attrs.remove(attName);
+      } else {
+        throw new WebApplicationException(Response.Status.NOT_FOUND);
+      }
+    }
+  }
 }

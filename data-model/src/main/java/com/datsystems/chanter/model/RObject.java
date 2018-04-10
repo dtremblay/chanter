@@ -1,6 +1,9 @@
 package com.datsystems.chanter.model;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -22,11 +25,9 @@ public class RObject {
 
   private String type;
   private String text;
-  private Properties attributes;
+  private Map<String, String> attributes;
   
-  /**
-   * Disable the empty constructor
-   */
+  // JPA requires a default constructor.
   public RObject() {}
   
   /**
@@ -38,7 +39,7 @@ public class RObject {
     this.created = new Date();
     this.updated = new Date();
     this.text = text;
-    this.attributes = new Properties();
+    this.attributes = new HashMap<>();
   }
   
   /**
@@ -46,19 +47,34 @@ public class RObject {
    * @return
    */
   public RObject(RObject r) {
-    this.guid = r.getGuid();
+    if (r.getGuid() != null) {
+      this.guid = r.getGuid();
+    } else {
+      this.guid = UUID.randomUUID().toString();
+    }
     this.version = r.getVersion() + 1;
     this.text = r.getText();
     this.created = r.getCreated();
     this.updated = new Date();
-    this.attributes = r.getAttributes();
+    if (r.getAttributes() != null) {
+      this.attributes = r.getAttributes();
+    } else {
+      this.attributes = new HashMap<>();
+    }
     this.type = r.getType();
   }
   public String getGuid() {
     return guid;
   }
+  public void setGuid(String guid) {
+    this.guid = guid;
+  }
+  
   public int getVersion() {
     return version;
+  }
+  public void setVersion(int version) {
+    this.version = version;
   }
   public Boolean getDeleted() {
     return deleted;
@@ -69,8 +85,14 @@ public class RObject {
   public Date getCreated() {
     return created;
   }
+  public void setCreated(Date created) {
+    this.created = created;
+  }
   public Date getUpdated() {
     return updated;
+  }
+  public void setUpdated(Date updated) {
+    this.updated = updated;
   }
   public String getType() {
     return type;
@@ -81,8 +103,11 @@ public class RObject {
   public String getText() {
     return text;
   }
-  public Properties getAttributes() {
+  public Map<String, String> getAttributes() {
     return attributes;
+  }
+  public void setAttributes(Map<String, String> map) {
+    attributes = map;
   }
   public void setAttribute(String key, String value) {
     attributes.put(key,  value);
