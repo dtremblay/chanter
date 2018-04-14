@@ -1,6 +1,7 @@
 package com.datsystems.chanter.logic;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -87,8 +88,7 @@ public class ChanterApplication {
   public RObject createRequirementInModule(@PathParam("id") String id, RObject r) {
     Module m = getModuleById(id);
     if (m != null) {
-      m.addRequirement(r);
-      return r;
+      return m.addRequirement(r);
     }
     throw new WebApplicationException(Response.Status.NOT_FOUND);
   }
@@ -113,9 +113,14 @@ public class ChanterApplication {
     Module m = getModuleById(id);
     if (m != null) {
       RObject oldR = getRequirementByIdForModule(id, r.getGuid());
+      // Create a new requirement from the old one
+      RObject newR = new RObject(oldR);
       oldR.setDeleted(true);
-      m.getrObjects().add(r);
-      return r;
+      oldR.setUpdated(new Date());
+      // Copy all attributes for the new object into the new instance
+      newR.setText(r.getText());
+      m.getrObjects().add(newR);
+      return newR;
     }
     throw new WebApplicationException(Response.Status.NOT_FOUND);
   }

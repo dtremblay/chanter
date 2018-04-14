@@ -49,13 +49,16 @@ public class RObject {
   public RObject(RObject r) {
     if (r.getGuid() != null) {
       this.guid = r.getGuid();
+      this.created = r.getCreated();
+      this.updated = new Date();
     } else {
       this.guid = UUID.randomUUID().toString();
+      this.created = new Date();
+      this.updated = this.created;
     }
     this.version = r.getVersion() + 1;
     this.text = r.getText();
-    this.created = r.getCreated();
-    this.updated = new Date();
+    
     if (r.getAttributes() != null) {
       this.attributes = r.getAttributes();
     } else {
