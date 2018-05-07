@@ -19,9 +19,12 @@
     <!-- What I really want here is to display the routes for each modules -->
     <router-link to="/"><span class="glyphicon glyphicon-home"></span> Home</router-link>
     <!-- Display the modules -->
-    <router-link to="/modules/id1"><span class="glyphicon glyphicon-plus"></span> Module 1</router-link> 
-    <router-link to="/modules/id2"><span class="glyphicon glyphicon-minus"></span> Module 2</router-link>
-    <div class="submenu">
+    <router-link to="/modules/id1"><span class="glyphicon glyphicon-plus"></span> Module 1</router-link>
+    <div class="submenu" v-show="expanded">
+    
+    </div> 
+    <router-link to="/modules/id2"><span class="glyphicon glyphicon-minus" ></span> Module 2</router-link>
+    <div class="submenu" v-show="expanded">
       <!-- Display the baselines for module 2 here -->
       <router-link to="/modules/id2/baselines/bl1">
         <span class="glyphicon glyphicon-asterisk"></span> Baseline 1</router-link>
@@ -30,6 +33,7 @@
       <router-link to="/modules/id2/baselines/current">
         <span class="glyphicon glyphicon-asterisk"></span> Current</router-link>
     </div>
+    <router-link to="/about"> About</router-link>
   </div>
   <div class="main">
     <h1>Chanter Requirements Management System</h1>
@@ -39,41 +43,49 @@
 </body>
 <script>
   var modules = {
-    "id1": {name: "Module 1", id: 1, attributes: [{name:'attr1',type:'String'}]},
-    "id2": {name: "Module 2", id: 2}
+    "id1": {expanded: false, name: "Module 1", id: 1, attributes: [{name:'attr1',type:'String'}]},
+    "id2": {expanded: false, name: "Module 2", id: 2}
+  };
+  var compStatistics = {
+    data: function() {
+      return {
+        baselines: {
+          "baseline1": {},
+          "current": {}
+        },
+        modules: modules
+      };
+    },
+    template: `<div>
+      <div><h2>Statistics</h2>
+        <table>
+          <tr><td>Modules: </td><td>{{ Object.keys(modules).length }} </td></tr>
+          <tr><td>Baselines: </td><td>{{ Object.keys(baselines).length }} </td></tr>
+        </table>
+      </div></div>`
+  };
+  var compModule = { props: ['moduleId'],
+    data: function() {
+      return {
+        modules: modules
+      };
+    },
+    template: '<module v-bind:module="modules[moduleId]"/>'
+  };
+  var compBaseline = {
+    props: ['moduleId','baselineId'], 
+    template: '<div><div>Module: {{ moduleId }} </div><div>Baseline: {{ baselineId }} </div></div>'
   };
   const router = new VueRouter({
     routes: [
-      { path: '/', component: {
-          data: function() {
-            return {
-              baselines: {
-                "baseline1": {},
-                "current": {}
-              },
-              modules: modules
-            };
-          },
-          template: `<div>
-            <div><h2>Statistics</h2>
-              <table>
-                <tr><td>Modules: </td><td>{{ Object.keys(modules).length }} </td></tr>
-                <tr><td>Baselines: </td><td>{{ Object.keys(baselines).length }} </td></tr>
-              </table>
-            </div></div>`
-        } },
+      { path: '/', component: compStatistics },
       { path: '/modules/:moduleId',
-        component: { props: ['moduleId'],
-        data: function() {
-          return {
-            modules: modules
-          };
-        },
-        template: '<module v-bind:module="modules[moduleId]"/>'},
-        props: true },
+        component: compModule,
+        props: true
+      },
       { path: '/modules/:moduleId/baselines/:baselineId',
-        component: { props: ['moduleId','baselineId'], template: '<div><div>Module: {{ moduleId }} </div><div>Baseline: {{ baselineId }} </div></div>'}, 
-        props: true },
+        component: compBaseline
+      },
       { path: '/about', component: { template: '<div>About</div>'} }
     ]
   });
