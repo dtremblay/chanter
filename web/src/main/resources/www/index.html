@@ -18,20 +18,23 @@
   <div class="sidenav">
     <!-- What I really want here is to display the routes for each modules -->
     <router-link to="/"><span class="glyphicon glyphicon-home"></span> Home</router-link>
-    <!-- Display the modules -->
-    <router-link to="/modules/id1"><span class="glyphicon glyphicon-plus"></span> Module 1</router-link>
-    <div class="submenu" v-show="expanded">
+    <!-- 
+    <ul>
+      <li v-for="module in modules">{{ module.name}}</li>
+    </ul>
+     -->
     
-    </div> 
-    <router-link to="/modules/id2"><span class="glyphicon glyphicon-minus" ></span> Module 2</router-link>
-    <div class="submenu" v-show="expanded">
-      <!-- Display the baselines for module 2 here -->
-      <router-link to="/modules/id2/baselines/bl1">
-        <span class="glyphicon glyphicon-asterisk"></span> Baseline 1</router-link>
-      <router-link to="/modules/id2/baselines/bl2">
-        <span class="glyphicon glyphicon-asterisk"></span> Baseline 2</router-link>
-      <router-link to="/modules/id2/baselines/current">
-        <span class="glyphicon glyphicon-asterisk"></span> Current</router-link>
+    <!-- Display the modules -->
+    <div v-for="module in modules" :key="module.id">
+      <router-link :to="'/modules/' + module.id">
+        <span class="glyphicon" :class="{ 'glyphicon-plus':!module.expanded, 'glyphicon-minus': module.expanded }"></span>
+        {{ module.name }}</router-link>
+    
+      <div class="submenu" v-show="module.expanded">
+        <!-- Display the baselines for module here -->
+        <router-link :to="'/modules/' + module.id + '/baselines/' + baseline.id" v-for="baseline in module.baselines" :key="baseline.id">
+          <span class="glyphicon glyphicon-asterisk"></span>{{ baseline.name }}</router-link>
+      </div>
     </div>
     <router-link to="/about"> About</router-link>
   </div>
@@ -42,10 +45,12 @@
   </div>
 </body>
 <script>
-  var modules = {
-    "id1": {expanded: false, name: "Module 1", id: 1, attributes: [{name:'attr1',type:'String'}]},
-    "id2": {expanded: false, name: "Module 2", id: 2}
-  };
+  var modules = [
+    {expanded: false, name: "Module 1", id: "id1", attributes: [{name:'attr1',type:'String'}], 
+      baselines: [ {name:"current", id: "c1"}]},
+    {expanded: false, name: "Module 2", id: "id2",
+      baselines: [{name:"SRR", id: "b1"},{name:"PDR", id: "b2"}, {name:"current", id: "c2"}]}
+  ];
   var compStatistics = {
     data: function() {
       return {
@@ -70,7 +75,19 @@
         modules: modules
       };
     },
-    template: '<module v-bind:module="modules[moduleId]"/>'
+    methods: {
+      module: function(id) {
+        var selected = undefined;
+        modules.forEach(function(m) {
+          m.expanded = (m.id === id);
+          if (m.id === id) {
+            selected = m;
+          }
+        });
+        return selected;
+      }
+    },
+    template: '<module v-bind:module="module(moduleId)"/>'
   };
   var compBaseline = {
     props: ['moduleId','baselineId'], 
@@ -84,15 +101,20 @@
         props: true
       },
       { path: '/modules/:moduleId/baselines/:baselineId',
-        component: compBaseline
+        component: compBaseline,
+        props: true
       },
       { path: '/about', component: { template: '<div>About</div>'} }
     ]
   });
+  // Add Dynamic Routers
   
   new Vue({
     el:'#app',
-    router
+    router,
+    data: {
+      modules: modules
+    }
   });
 </script>
 </html>
