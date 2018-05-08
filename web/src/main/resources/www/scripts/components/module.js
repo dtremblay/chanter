@@ -7,7 +7,7 @@ Vue.component('module', {
       <tr><td><strong>Name: </strong></td><td>{{ module.name }} </td></tr>
       <tr><td><strong>Id: </strong></td><td>{{ module.id }}</td></tr>
     </table>
-    <h2>Attributes</h2>
-    <table><tr v-for="attribute in module.attributes"><td><strong>{{ attribute.name }}: </strong></td><td>{{ attribute.type }}</td></tr></table>
+    <h2 v-if="module.attributes !== undefined">Attributes</h2>
+    <table v-if="module.attributes !== undefined"><tr v-for="attribute in module.attributes"><td><strong>{{ attribute.name }}: </strong></td><td>{{ attribute.type }}</td></tr></table>
     </div>`
 })

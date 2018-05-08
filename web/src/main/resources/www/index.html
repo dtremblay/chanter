@@ -54,18 +54,26 @@
   var compStatistics = {
     data: function() {
       return {
-        baselines: {
-          "baseline1": {},
-          "current": {}
-        },
         modules: modules
       };
+    },
+    methods: {
+      moduleCount: function(){
+        return modules.length
+      },
+      baselineCount: function(){
+        var total = 0;
+        modules.forEach(function(m) {
+          total += m.baselines.length;
+        })
+        return total;
+      }
     },
     template: `<div>
       <div><h2>Statistics</h2>
         <table>
-          <tr><td>Modules: </td><td>{{ Object.keys(modules).length }} </td></tr>
-          <tr><td>Baselines: </td><td>{{ Object.keys(baselines).length }} </td></tr>
+          <tr><td>Modules: </td><td>{{ moduleCount() }} </td></tr>
+          <tr><td>Baselines: </td><td>{{ baselineCount() }} </td></tr>
         </table>
       </div></div>`
   };
