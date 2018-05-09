@@ -1,13 +1,28 @@
 // Define a new component called module
 Vue.component('module', {
   props : [ 'module' ],
+  methods: {
+    newAttribute: function() {
+      if (this.module.attributes === undefined) {
+        this.module.attributes = [];
+      }
+      var id = this.module.attributes.length + 1;
+      this.module.attributes.push({name:'New Attribute ' + id, type: "String"});
+    }
+  },
+  computed: {
+    attributesVisible: function() {
+      return this.module.attributes !== undefined;
+    }
+  },
   template : `<div class="module">
     <h1>Module</h1>
     <table>
       <tr><td><strong>Name: </strong></td><td>{{ module.name }} </td></tr>
       <tr><td><strong>Id: </strong></td><td>{{ module.id }}</td></tr>
     </table>
-    <h2 v-if="module.attributes !== undefined">Attributes</h2>
+    <h2 v-if="attributesVisible">Attributes</h2>
+    <button v-on:click="newAttribute">New Attribute</button>
     <table v-if="module.attributes !== undefined"><tr v-for="attribute in module.attributes"><td><strong>{{ attribute.name }}: </strong></td><td>{{ attribute.type }}</td></tr></table>
     </div>`
 })

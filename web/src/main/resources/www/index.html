@@ -18,11 +18,6 @@
   <div class="sidenav">
     <!-- What I really want here is to display the routes for each modules -->
     <router-link to="/"><span class="glyphicon glyphicon-home"></span> Home</router-link>
-    <!-- 
-    <ul>
-      <li v-for="module in modules">{{ module.name}}</li>
-    </ul>
-     -->
     
     <!-- Display the modules -->
     <div v-for="module in modules" :key="module.id">
@@ -58,12 +53,20 @@
       };
     },
     methods: {
+      newModule: function() {
+        // Show a dialog
+        var id = modules.length+1;
+        this.modules.push({expanded:false,name:"Module " + id, id: "id" + id, 
+          attributes: [], baselines:[{name:"current", id:"c" + id}] });
+      }
+    },
+    computed: {
       moduleCount: function(){
-        return modules.length
+        return this.modules.length
       },
       baselineCount: function(){
         var total = 0;
-        modules.forEach(function(m) {
+        this.modules.forEach(function(m) {
           total += m.baselines.length;
         })
         return total;
@@ -72,30 +75,32 @@
     template: `<div>
       <div><h2>Statistics</h2>
         <table>
-          <tr><td>Modules: </td><td>{{ moduleCount() }} </td></tr>
-          <tr><td>Baselines: </td><td>{{ baselineCount() }} </td></tr>
+          <tr><td>Modules: </td><td>{{ moduleCount }} </td></tr>
+          <tr><td>Baselines: </td><td>{{ baselineCount }} </td></tr>
         </table>
-      </div></div>`
+      </div>
+      <button v-on:click="newModule">New Module</button>
+      </div>`
   };
   var compModule = { props: ['moduleId'],
     data: function() {
       return {
-        modules: modules
+        modules: modules,
+        selected: undefined
       };
     },
     methods: {
-      module: function(id) {
-        var selected = undefined;
-        modules.forEach(function(m) {
+      findModule: function(id) {
+        this.modules.forEach(function(m) {
           m.expanded = (m.id === id);
           if (m.id === id) {
-            selected = m;
+            this.selected = m;
           }
         });
         return selected;
       }
     },
-    template: '<module v-bind:module="module(moduleId)"/>'
+    template: '<module v-bind:module="findModule(moduleId)"/>'
   };
   var compBaseline = {
     props: ['moduleId','baselineId'], 
