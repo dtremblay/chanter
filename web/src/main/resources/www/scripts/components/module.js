@@ -3,11 +3,8 @@ Vue.component('module', {
   props : [ 'module' ],
   methods: {
     newAttribute: function() {
-      if (this.module.attributes === undefined) {
-        this.module.attributes = [];
-      }
       var id = this.module.attributes.length + 1;
-      this.module.attributes.push({name:'New Attribute ' + id, type: "String"});
+      Vue.set(this.module.attributes, id-1, {name:'New Attribute ' + id, type: "String"});
     }
   },
   computed: {
@@ -23,6 +20,11 @@ Vue.component('module', {
     </table>
     <h2 v-if="attributesVisible">Attributes</h2>
     <button v-on:click="newAttribute">New Attribute</button>
-    <table v-if="module.attributes !== undefined"><tr v-for="attribute in module.attributes"><td><strong>{{ attribute.name }}: </strong></td><td>{{ attribute.type }}</td></tr></table>
+    <table v-if="module.attributes !== undefined">
+      <tr v-for="attribute in module.attributes" :key="attribute.id">
+        <td><strong>{{ attribute.name }}: </strong></td>
+        <td>{{ attribute.type }}</td>
+      </tr>
+    </table>
     </div>`
-})
+});
