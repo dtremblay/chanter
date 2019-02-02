@@ -98,7 +98,7 @@
           m.expanded = (m.id === id);
           if (m.id === id) {
             if (m.attributes === undefined) {
-              m.attributes = [];
+              Vue.set(m, "attributes", []);
             }
             self.selected = m;
           }
@@ -126,7 +126,7 @@
               if (b.id === bId) {
                 b.module = {name: m.name};
                 if (b.requirements === undefined) {
-                  b.requirements = [];
+                  Vue.set(b, "requirements", []);
                 }
                 this.selected = b;
               }

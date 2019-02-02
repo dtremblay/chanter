@@ -4,8 +4,8 @@ Vue.component('baseline', {
   methods: {
     newRequirement: function() {
       var id = this.baseline.requirements.length + 1;
-      //Vue.set(this.baseline.requirements, id-1 , {id: 'id' + id, description:'New Requirement ' + id });
-      this.baseline.requirements.push({id: 'id' + id, description:'New Requirement ' + id });
+      Vue.set(this.baseline.requirements, id-1 , {id: 'id' + id, description:'New Requirement ' + id });
+      //this.baseline.requirements.push({id: 'id' + id, description:'New Requirement ' + id });
     }
   },
   computed: {
