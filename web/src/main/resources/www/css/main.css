@@ -44,6 +44,9 @@
   font-size: 20px; /* Increased text to enable scrolling */
   padding: 0px 10px;
 }
+table, th, td {
+  border: 1px solid black;
+}
 th.AttributeNameColumn {
   width: 250px
 }

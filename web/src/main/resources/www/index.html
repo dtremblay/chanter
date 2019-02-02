@@ -125,6 +125,7 @@
             m.baselines.forEach(function(b){
               if (b.id === bId) {
                 b.module = {name: m.name};
+                b.attributes = m.attributes;
                 if (b.requirements === undefined) {
                   Vue.set(b, "requirements", []);
                 }

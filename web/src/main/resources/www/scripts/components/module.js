@@ -3,16 +3,13 @@ Vue.component('module', {
   props : [ 'module' ],
   methods: {
     newAttribute: function() {
-      if (this.module.attributes === undefined) {
-        this.module.attributes = [];
-      }
       var id = this.module.attributes.length + 1;
       Vue.set(this.module.attributes, id-1, {name:'New Attribute ' + id, type: "String"});
     }
   },
   computed: {
     attributesVisible: function() {
-      return this.module.attributes !== undefined;
+      return (this.module.attributes.length > 0);
     }
   },
   template : `<div class="module">
