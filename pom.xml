@@ -7,13 +7,16 @@
   <packaging>pom</packaging>
   <name>Chanter RM</name>
   <description>Chanter Requirements Management System</description>
+  
+  
   <modules>
     <module>data-model</module>
     <module>back-end</module>
     <module>web</module>
   </modules>
   <properties>
-    <java.version>1.8</java.version>
+    <java.version>10</java.version>
+    <mw.version>1.2.5</mw.version>
   </properties>
   <dependencyManagement>
     <dependencies>

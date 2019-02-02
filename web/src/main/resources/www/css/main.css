@@ -44,18 +44,3 @@
   font-size: 20px; /* Increased text to enable scrolling */
   padding: 0px 10px;
 }
-table, th, td {
-  border: 1px solid black;
-}
-th.AttributeNameColumn {
-  width: 250px
-}
-th.AttributeTypeColumn {
-  width: 150px
-}
-th.BaselineNameColumn {
-  width: 250px
-}
-th.BaselineCountColumn {
-  width: 150px
-}

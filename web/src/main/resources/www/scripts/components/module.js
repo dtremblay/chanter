@@ -1,53 +1,66 @@
 // Define a new component called module
 Vue.component('module', {
   props : [ 'module' ],
-  methods: {
-    newAttribute: function() {
-      var id = this.module.attributes.length + 1;
-      Vue.set(this.module.attributes, id-1, {name:'New Attribute ' + id, type: "String"});
-    }
-  },
   computed: {
     attributesVisible: function() {
       return (this.module.attributes.length > 0);
     }
   },
-  template : `<div class="module">
-    <h1>Module</h1>
-    <table>
-      <tr><td><strong>Name: </strong></td><td>{{ module.name }} </td></tr>
-      <tr><td><strong>Id: </strong></td><td>{{ module.id }}</td></tr>
+  template : `<div class="container">
+    <h2>Module Details</h2>
+    <table class="table table-condensed">
+      <tbody>
+        <tr><th scope="row">Name: </th><td>{{ module.name }} </td></tr>
+        <tr><th scope="row">Id: </th><td>{{ module.id }}</td></tr>
+        <tr><th scope="row">Description: </th><td>{{ module.description }}</td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td scope="row" colspan="2">&nbsp;</td></tr>
+      </tfoot>
     </table>
     
     <!-- Display the baselines -->
     <h2>Baselines</h2>
-    <table>
+    <table class="table table-condensed">
       <thead>
         <tr>
           <th class="BaselineNameColumn">Name</th>
-          <th class="BaselineCountColumn">Count</th>
+          <th class="BaselineCountColumn">Requirement Count</th>
         </tr>
       </thead>
-      <tr v-for="baseline in module.baselines" :key="baseline.id">
-        <td><strong>{{ baseline.name }}: </strong></td>
-        <td>{{ baseline.requirements == undefined ? 0 : baseline.requirements.length }}</td>
-      </tr>
+      <tbody>
+        <tr v-for="baseline in module.baselines" :key="baseline.id">
+          <th scope="row">{{ baseline.name }}: </th>
+          <td>{{ baseline.requirements == undefined ? 0 : baseline.requirements.length }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr><td scope="row" colspan="2">&nbsp;</td></tr>
+      </tfoot>
     </table>
     
     <!-- Display the attributes -->
     <h2 v-if="attributesVisible">Attributes</h2>
-    <button v-on:click="newAttribute">New Attribute</button>
-    <table v-if="attributesVisible">
+    <router-link :to="'/modules/' + this.module.id + '/attributes/create'" class="btn btn-primary">New Attribute</router-link>
+    <table v-if="attributesVisible" class="table table-condensed">
       <thead>
         <tr>
-          <th class="AttributeNameColumn">Name</th>
-          <th class="AttributeTypeColumn">Type</th>
+          <th scope="col">Attribute Name</th>
+          <th scope="col">Attribute Type</th>
+          <th scope="col">Action</th>
         </tr>
       </thead>
-      <tr v-for="attribute in module.attributes" :key="attribute.id">
-        <td><strong>{{ attribute.name }}: </strong></td>
-        <td>{{ attribute.type }}</td>
-      </tr>
+      <tbody>
+        <tr v-for="attribute in module.attributes" :key="attribute.id">
+          <th scope="row">{{ attribute.name }}: </th>
+          <td>{{ attribute.type }}</td>
+          <td><router-link :to="$route.params.moduleId + '/attributes/' + attribute.name" class="glyphicon glyphicon-pencil"></router-link></td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr><td scope="row" colspan="3">&nbsp;</td></tr>
+      </tfoot>
     </table>
+    
     </div>`
 });
