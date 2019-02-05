@@ -16,15 +16,15 @@ Vue.component('attribute', {
       <h2>Attribute</h2>
       <form class="form-horizontal">
         <div class="form-group">
-          <label class="col-sm-2 control-label">Name:</label>
+          <label class="col-sm-2 control-label" for="attributeName">Name</label>
           <div class="col-sm-10">
-            <input class="form-control" v-model="attribute.name"/>
+            <input class="form-control" id="attributeName" v-model="attribute.name"/>
           </div>
         </div>
         <div class="form-group">
-          <label class="col-sm-2 control-label">Type:</label>
+          <label class="col-sm-2 control-label" for="attributeType">Type</label>
           <div class="col-sm-10">
-            <select class="form-control" v-model="attribute.type">
+            <select class="form-control" id="attributeType" v-model="attribute.type">
               <option>String</option>
               <option>Boolean</option>
               <option>Number</option>

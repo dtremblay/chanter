@@ -1,6 +1,8 @@
 // Define a new component called module
 Vue.component('baseline', {
-  props : [ 'baseline' ],
+  props : {
+    'baseline': Object
+  },
   computed: {
     reqCount: function() {
       return this.baseline.requirements.length;
@@ -26,7 +28,7 @@ Vue.component('baseline', {
       <thead>
         <tr>
           <th class="RequirementIdColumn" scope="col">#</th>
-          <th class="RequirementNameColumn" scope="col">Count</th>
+          <th class="RequirementNameColumn" scope="col">Description</th>
           <th v-for="attribute in baseline.attributes" scope="col">
           {{ attribute.name }}
           </th>

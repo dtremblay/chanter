@@ -6,22 +6,46 @@ Vue.component('module', {
       return (this.module.attributes.length > 0);
     }
   },
+  methods: {
+    appendModule: function() {
+      if (this.$route.params.moduleId === "create") {
+        Vue.set(this.$parent.modules, this.$parent.modules.length, this.module);
+        this.$router.push("/modules/" + this.module.id);
+      }
+    }
+  },
   template : `<div class="container">
     <h2>Module Details</h2>
-    <table class="table table-condensed">
-      <tbody>
-        <tr><th scope="row">Name: </th><td>{{ module.name }} </td></tr>
-        <tr><th scope="row">Id: </th><td>{{ module.id }}</td></tr>
-        <tr><th scope="row">Description: </th><td>{{ module.description }}</td></tr>
-      </tbody>
-      <tfoot>
-        <tr><td scope="row" colspan="2">&nbsp;</td></tr>
-      </tfoot>
-    </table>
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Id</label>
+        <div class="col-sm-10">
+          <span class="form-control">{{ module.id === undefined ? 'New' : module.id }}</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Name</label>
+        <div class="col-sm-10">
+          <input class="form-control" v-model="module.name"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="col-sm-2 control-label">Description</label>
+        <div class="col-sm-10">
+          <textarea class="form-control" v-model="module.description" rows="4">
+          </textarea>
+        </div>
+      </div>
+      <div v-if="this.$route.params.moduleId === 'create'" class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button v-on:click="appendModule" class="btn btn-primary btn-default">Save</button>
+        </div>
+      </div>
+    </form>
     
     <!-- Display the baselines -->
-    <h2>Baselines</h2>
-    <table class="table table-condensed">
+    <h2 v-if="this.$route.params.moduleId !== 'create'">Baselines</h2>
+    <table v-if="this.$route.params.moduleId !== 'create'" class="table table-condensed">
       <thead>
         <tr>
           <th class="BaselineNameColumn">Name</th>
@@ -40,8 +64,8 @@ Vue.component('module', {
     </table>
     
     <!-- Display the attributes -->
-    <h2 v-if="attributesVisible">Attributes</h2>
-    <router-link :to="'/modules/' + this.module.id + '/attributes/create'" class="btn btn-primary">New Attribute</router-link>
+    <h2 v-if="attributesVisible && this.$route.params.moduleId !== 'create'">Attributes</h2>
+    <router-link :to="'/modules/' + this.module.id + '/attributes/create'" v-if="this.$route.params.moduleId !== 'create'" class="btn btn-primary">New Attribute</router-link>
     <table v-if="attributesVisible" class="table table-condensed">
       <thead>
         <tr>

@@ -9,19 +9,20 @@
   <link rel="stylesheet" href="./libs/bootstrap-3.3.7-dist/css/bootstrap.min.css">
   <link rel="styleSheet" href="./css/main.css" />
   <link href="/favicon.ico" rel="icon">
-  <script src="./libs/vue.js" type="text/javascript"></script>
-  <script src="./libs/vue-router.js" type="text/javascript"></script>
-  <script src="./scripts/components/module.js" type="text/javascript"></script>
-  <script src="./scripts/components/baseline.js" type="text/javascript"></script>
-  <script src="./scripts/components/attribute.js" type="text/javascript"></script>
-  <script src="./scripts/components/requirement.js" type="text/javascript"></script>
+  <script type="text/javascript" src="./libs/vue.js"></script>
+  <script type="text/javascript" src="./libs/vuex.js"></script>
+  <script type="text/javascript" src="./libs/vue-router.js"></script>
+  <script type="text/javascript" src="./scripts/components/module.js"></script>
+  <script type="text/javascript" src="./scripts/components/baseline.js"></script>
+  <script type="text/javascript" src="./scripts/components/attribute.js"></script>
+  <script type="text/javascript" src="./scripts/components/requirement.js"></script>
 </head>
 
 <body>
   <div id="app">
   <div class="sidenav">
     <!-- What I really want here is to display the routes for each modules -->
-    <router-link to="/"><span class="glyphicon glyphicon-home"></span> Home</router-link>
+    <router-link to="/home"><span class="glyphicon glyphicon-home"></span> Home</router-link>
     
     <!-- Display the modules -->
     <div v-for="module in modules" :key="module.id">
@@ -44,33 +45,25 @@
   </div>
 </body>
 <script>
-  var modules = [
+  var moduleData = [
     {expanded: false, name: "Module 1", id: "id1", attributes: [{name:'attr1',type:'String'}], 
       baselines: [ {name:"current", id: "c1"}]},
     {expanded: false, name: "Module 2", id: "id2",
       baselines: [{name:"SRR", id: "b1"},{name:"PDR", id: "b2"}, {name:"current", id: "c2"}]}
   ];
   var compStatistics = {
-    data: function() {
-      return {
-        modules: modules
-      };
-    },
     methods: {
       newModule: function() {
-        // Show a dialog
-        var id = modules.length+1;
-        this.modules.push({expanded:false,name:"Module " + id, id: "id" + id, 
-          attributes: [], baselines:[{name:"current", id:"c" + id}] });
+        this.$router.push("/modules/create");
       }
     },
     computed: {
       moduleCount: function(){
-        return this.modules.length
+        return moduleData.length
       },
       baselineCount: function(){
         var total = 0;
-        this.modules.forEach(function(m) {
+        moduleData.forEach(function(m) {
           total += m.baselines.length;
         })
         return total;
@@ -103,23 +96,29 @@
     props: ['moduleId'],
     data: function() {
       return {
-        modules: modules,
-        selected: undefined
+        modules: moduleData,
+        selMod: undefined
       };
     },
     methods: {
       findModule: function(id) {
         var self = this;
-        self.modules.forEach(function(m, idx) {
+        moduleData.forEach(function(m, idx) {
           m.expanded = (m.id === id);
           if (m.id === id) {
             if (m.attributes === undefined) {
               Vue.set(m, "attributes", []);
             }
-            self.selected = m;
+            self.selMod = m;
           }
         });
-        return self.selected;
+        if (self.selMod == undefined) {
+          // Create a new module
+          var id = moduleData.length + 1;
+          self.selMod = {id: "id" + id, attributes:[], name: 'New Module',
+            expanded:true, baselines: [{name:"current", id:"c" + id}]};
+        }
+        return self.selMod;
       }
     },
     template: '<module v-bind:module="findModule(moduleId)"/>'
@@ -132,14 +131,13 @@
     props: ['moduleId','baselineId'],
     data: function() {
       return {
-        modules: modules,
         selBL: undefined
       }
     },
     methods: {
       findBaseline(mId, bId) {
         var self=this;
-        modules.forEach(function(m){
+        moduleData.forEach(function(m){
           m.expanded = (m.id === mId);
           if (m.id === mId) {
             m.baselines.forEach(function(b){
@@ -167,7 +165,7 @@
     props: ['moduleId','attributeId'],
     data: function() {
       return {
-        modules: modules,
+        //modules: modules,
         module: null,
         selAtt: undefined
       }
@@ -175,10 +173,10 @@
     methods: {
       findAttribute: function(mId, aName) {
         var self=this;
-        modules.forEach(function(m) {
+        moduleData.forEach(function(m) {
           if (m.id === mId) {
-            m.expanded = true;
             self.module = m;
+            self.module.expanded = (m.id === mId);
             if (m.attributes === undefined) {
               Vue.set(m, "attributes", []);
             } else {
@@ -207,7 +205,7 @@
     props: ['moduleId','baselineId','requirementId'],
     data: function(){
       return {
-        modules: modules,
+        modAttrs: undefined,
         currentBL: undefined,
         selReq: undefined 
       }
@@ -215,9 +213,10 @@
     methods: {
       findRequirement: function(mId, bId, rId){
         var self=this;
-        modules.forEach(function(m){
+        moduleData.forEach(function(m){
           m.expanded = (m.id === mId);
           if (m.id === mId) {
+            self.modAttrs = m.attributes;
             m.baselines.forEach(function(b){
               if (b.id === bId) {
                 self.currentBL = b;
@@ -238,8 +237,8 @@
           // Create a new requirement, but don't assign it to the collection
           var id = self.currentBL.requirements.length + 1;
           self.selReq = {id: 'id' + id, description:'New Requirement ' + id };
-          if (self.currentBL.attributes !== undefined) {
-            self.currentBL.attributes.forEach(function(att){
+          if (self.modAttrs !== undefined) {
+            self.modAttrs.forEach(function(att){
               self.selReq[att.name] = "blank";
             });
           }
@@ -249,9 +248,11 @@
     },
     template: '<requirement v-bind:requirement="findRequirement(moduleId,baselineId,requirementId)"/>'
   };
+  
+  // Add Dynamic Routers
   const router = new VueRouter({
     routes: [
-      { path: '/', component: compStatistics },
+      { path: '/home', component: compStatistics },
       { path: '/modules/:moduleId',
         component: compModule,
         props: true
@@ -268,16 +269,23 @@
         component: compAttribute,
         props: true
       },
-      { path: '/about', component: { template: '<div>About</div>'} }
+      { path: '/about', component: { template: '<div>About</div>'} },
+      { path: '/', redirect: '/home' }
     ]
   });
-  // Add Dynamic Routers
   
+  // Create a store
+  const store = new Vuex.Store({
+    state: {},
+    getters: {},
+    mutations: {}
+  });
   new Vue({
     el:'#app',
     router,
+    store,
     data: {
-      modules: modules
+      modules: moduleData
     }
   });
 </script>

@@ -32,7 +32,7 @@
 .sidenav a:hover {
   color: #f1f1f1;
 }
-.sidenav .router-link-exact-active {
+.sidenav .router-link-active {
   color: green;
 }
 .submenu a {
