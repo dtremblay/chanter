@@ -16,6 +16,8 @@
   <script type="text/javascript" src="./scripts/components/baseline.js"></script>
   <script type="text/javascript" src="./scripts/components/attribute.js"></script>
   <script type="text/javascript" src="./scripts/components/requirement.js"></script>
+  <script type="text/javascript" src=".//libs/jquery/jquery-1.9.1.min.js"></script>
+  <script type="text/javascript" src="./libs/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
 </head>
 
 <body>
@@ -53,8 +55,14 @@
   ];
   var compStatistics = {
     methods: {
+      // Create a new module
       newModule: function() {
         this.$router.push("/modules/create");
+      },
+      // Import a CSV, PDF, Excel or MS Word Document
+      importFile: function () {
+      },
+      generateReport: function() {
       }
     },
     computed: {
@@ -84,7 +92,21 @@
         </table>
       </div>
       <div class="row">
-        <button v-on:click="newModule" class="btn btn-primary btn-lg">New Module</button>
+        <div class="col-md-2">
+          <button v-on:click="newModule" class="btn btn-primary btn-lg">New Module</button>
+        </div>
+        <div class="col-md-2 dropdown">
+          <button class="btn btn-primary btn-lg dropdown-toggle" type="button" id="importDropDownMenu" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+            Import File
+            <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="importDropDownMenu">
+            <li><router-link to="/import?type=pdf">Import from PDF</router-link></li>
+            <li><router-link to="/import?type=xls">Import from Excel</router-link></li>
+            <li><router-link to="/import?type=csv">Import from CSV</router-link></li>
+            <li><router-link to="/import?type=wrd">Import from MS Word</router-link></li>
+          </ul>
+        </div>
       </div>
     </div>`
   };
@@ -249,6 +271,13 @@
     template: '<requirement v-bind:requirement="findRequirement(moduleId,baselineId,requirementId)"/>'
   };
   
+  var compImportModule = {
+    props: ['import-type'],
+    methods: {
+    },
+    template: '<import-module v-bind:import-type=""/>'
+  };
+  
   // Add Dynamic Routers
   const router = new VueRouter({
     routes: [
@@ -270,6 +299,7 @@
         props: true
       },
       { path: '/about', component: { template: '<div>About</div>'} },
+      { path: '/import', component: compImportModule },
       { path: '/', redirect: '/home' }
     ]
   });

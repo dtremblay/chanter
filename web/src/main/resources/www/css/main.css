@@ -44,3 +44,6 @@
   font-size: 20px; /* Increased text to enable scrolling */
   padding: 0px 10px;
 }
+span.glyphicon {
+  cursor:pointer
+}
