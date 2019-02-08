@@ -1,7 +1,7 @@
 # Chanter
 Chanter is a requirements management system.
 
-If you have had to live with Rational DOORS and it's proprietary database and how difficult it is to connect to your open source project, then this project is for you.
+If you have had to live with Rational DOORS and its proprietary database and how difficult it is to connect to your open source project, then this project is for you.
 
 ### Goals:
 * allow users to create, modify and delete modules
