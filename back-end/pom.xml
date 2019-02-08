@@ -30,7 +30,7 @@
       <version>3.4.1</version>
     </dependency>
   </dependencies>
-  
+
   <build>
     <plugins>
       <plugin>
@@ -40,6 +40,10 @@
         <configuration>
           <httpPort>8082</httpPort>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>

@@ -10,6 +10,8 @@
   <name>Web Resources for Chanter</name>
   <properties>
     <frontend.base>src/main/resources</frontend.base>
+    <sonar.sources>src/main/resources/www</sonar.sources>
+    <sonar.exclusions>src/main/resources/www/libs/**</sonar.exclusions>
   </properties>
   <dependencies>
     <!-- Use Meecrowave to deploy the resource. This is an attempt at decoupling the front-end from the 

@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.datsystems.chanter</groupId>
@@ -7,15 +8,15 @@
   <packaging>pom</packaging>
   <name>Chanter RM</name>
   <description>Chanter Requirements Management System</description>
-  
-  
+
+
   <modules>
     <module>data-model</module>
     <module>back-end</module>
     <module>web</module>
   </modules>
   <properties>
-    <java.version>10</java.version>
+    <java.version>1.8</java.version>
     <mw.version>1.2.5</mw.version>
   </properties>
   <dependencyManagement>
@@ -50,6 +51,25 @@
             <source>${java.version}</source>
             <target>${java.version}</target>
           </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.3</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>prepare-agent</goal>
+              </goals>
+            </execution>
+            <execution>
+              <id>report</id>
+              <phase>prepare-package</phase>
+              <goals>
+                <goal>report</goal>
+              </goals>
+            </execution>
+          </executions>
         </plugin>
       </plugins>
     </pluginManagement>
