@@ -9,7 +9,7 @@ Vue.component('module', {
   methods: {
     appendModule: function() {
       if (this.$route.params.moduleId === "create") {
-        Vue.set(this.$parent.modules, this.$parent.modules.length, this.module);
+        this.$store.commit("createModule", this.module);
         this.$router.push("/modules/" + this.module.id);
       }
     },

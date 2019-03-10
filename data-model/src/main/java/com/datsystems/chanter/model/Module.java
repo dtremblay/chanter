@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * A system may contain multiple modules.
@@ -15,10 +14,10 @@ import java.util.UUID;
  * @author daniel
  *
  */
-public class Module {
+public class Module{
   
   public enum AttributeType {
-    STRING, NUMBER, LIST, BOOLEAN
+    STRING, NUMBER, LIST, BOOLEAN, ENUM
   }
   private String guid;
   private String name;
@@ -38,7 +37,6 @@ public class Module {
    * @param description
    */
   public Module(String name, String description) {
-    guid = UUID.randomUUID().toString();
     this.name = name;
     this.description = description;
     this.rObjects = new ArrayList<>();
@@ -48,6 +46,9 @@ public class Module {
 
   public String getGuid() {
     return guid;
+  }
+  public void setGuid(String value) {
+	 guid = value;
   }
 
   public void setName(String name) {
