@@ -3,7 +3,7 @@ Vue.component('attribute', {
   methods: {
     appendAttribute: function() {
       if (this.$route.params.attributeId === "create") {
-        Vue.set(this.$parent.module.attributes, this.$parent.module.attributes.length, this.attribute);
+        this.$store.commit("createAttribute", {module: this.$parent.module, attribute: this.attribute});
       }
       this.back();
     },
