@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Map.Entry;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.Consumes;
@@ -19,6 +19,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,9 @@ import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.Module.AttributeType;
 import com.datsystems.chanter.model.RObject;
-import com.mongodb.MongoClient;
+
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
@@ -80,19 +83,10 @@ public class ChanterApplication {
 	 * @param dbName
 	 */
 	public void setMongoDatabase(String mongoURI, String dbName) {
-		mongoClient = new MongoClient(mongoURI);
+		mongoClient = MongoClients.create(mongoURI);
 		db = mongoClient.getDatabase(dbName);
+		// Load the MongoDB modules
 		loadModules();
-	}
-	
-	private void loadModules() {
-		// Find all collections and load them into modules
-		for (String name : db.listCollectionNames()) {
-			// Each document is a baseline
-			Module m = new Module();
-			m.setName(name);
-			modules.add(modules.size(), m);
-		}
 	}
 	
 	@GET
@@ -113,18 +107,86 @@ public class ChanterApplication {
 
 	@POST
 	@Consumes("application/json")
-	public Module createModule(Module m) {
-		Module newModule = new Module(m.getName(), m.getDescription());
-		modules.add(newModule);
-		if (db != null) {
-			logger.info("Creating Mongo Collection {}", m.getName());
-			db.createCollection(m.getName());
-		} else {
-			newModule.setGuid(UUID.randomUUID().toString());
+	public Module createModule(Module module) throws ChanterException {
+		// Check for duplicate names
+		for (Module m: modules) {
+			if (m.getName().equalsIgnoreCase(module.getName())) {
+				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
+			}
 		}
-		return newModule;
+		if (db != null) {
+			logger.info("Creating Mongo Collection {}", module.getName());
+			db.createCollection(module.getName());
+			persistModuleProperties(module);
+		}
+		modules.add(module);
+		return module;
 	}
 
+	// For each collection in the Mongo database, read the modules
+	private void loadModules() {
+		// Find all collections and load them into modules
+		if (db != null) {
+			for (String name : db.listCollectionNames()) {
+				// Each collection must contain a Properties document
+				// Each collection contains baseline documents
+				Module m = readModuleFromDb(name);
+				if (m != null) {
+					modules.add(modules.size(), m);
+				}
+			}
+		}
+	}
+	private Module readModuleFromDb(String name) {
+		Module m = null;
+		MongoCollection<Document> coll = db.getCollection(name);
+		if (coll != null) {
+			Document props = coll.find(new Document("name", "Properties")).first();
+			if (props != null) {
+				m = new Module(name, props.getString("description"));
+				m.setGuid(props.get("_id").toString());
+				// Now read the attributes
+				Document attrDoc = (Document) props.get("attributes");
+				if (attrDoc != null) {
+					for (Entry<String, Object> entry: attrDoc.entrySet()) {
+						m.addAttribute(entry.getKey(), AttributeType.valueOf((String)entry.getValue()));
+					}
+				}
+			}
+		}
+		return m;
+	}
+	
+	// Convert a Module object to Document
+	private Document convertModuleToDocument(Module m) {
+		Document props = new Document("name", "Properties").append("description", m.getDescription());
+		if (m.getGuid() != null) {
+			props.append("_id", new ObjectId(m.getGuid()));
+		}
+		Document attrDoc = new Document();
+		 
+		for (Entry<String, AttributeType> entry: m.getAttributes().entrySet()) {
+			attrDoc.append(entry.getKey(), entry.getValue().toString());
+		}
+		props.append("attributes", attrDoc);
+		return props;
+	}
+	
+	// Persist the properties of a module
+	private void persistModuleProperties(Module m) {
+		if (db != null) {
+			MongoCollection<Document> collection = db.getCollection(m.getName());
+			if (collection  != null) {
+				Document props = convertModuleToDocument(m);
+				if (props.get("_id") != null) {
+					collection.replaceOne(new Document("_id", new ObjectId(m.getGuid())), props);
+				} else {
+					collection.insertOne(props);
+					m.setGuid(props.get("_id").toString());
+				}
+			}
+		}
+	}
 	@DELETE
 	@Path("{name}")
 	public Module deleteModule(@PathParam("name") String name) {
@@ -215,25 +277,22 @@ public class ChanterApplication {
 
 	@POST
 	@Path("{name}/attributes/{attName}")
-	public void saveAttribute(@PathParam("name") String name, @PathParam("attName") String attName, String type) {
-		Module m = getModuleByName(name);
+	public void saveAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName, @PathParam("attType") String type) {
+		Module m = getModuleByName(moduleName);
 		if (m != null) {
 			AttributeType attrType = AttributeType.valueOf(type);
 			m.addAttribute(attName, attrType);
+			persistModuleProperties(m);
 		}
 	}
 
 	@DELETE
 	@Path("{name}/attributes/{attName}")
-	public void deleteAttribute(@PathParam("name") String name, @PathParam("attName") String attName) {
-		Module m = getModuleByName(name);
+	public void deleteAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName) {
+		Module m = getModuleByName(moduleName);
 		if (m != null) {
-			Map<String, AttributeType> attrs = m.getAttributes();
-			if (attrs.containsKey(attName)) {
-				attrs.remove(attName);
-			} else {
-				throw new WebApplicationException(Response.Status.NOT_FOUND);
-			}
+			m.deleteAttribute(attName);
+			persistModuleProperties(m);
 		}
 	}
 
