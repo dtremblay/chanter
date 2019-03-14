@@ -5,11 +5,13 @@ import java.util.Scanner;
 import org.apache.meecrowave.Meecrowave;
 
 public class ChanterServer {
-  public static void main(String... args) throws Exception {
-    try (final Meecrowave meecrowave = new Meecrowave().bake()) {
-      new Scanner(System.in).nextLine();
-    } finally {
-
-    }
-  }
+	public static void main(String... args) throws Exception {
+		final Meecrowave meecrowave = new Meecrowave();
+		try {
+			meecrowave.bake();
+			new Scanner(System.in).nextLine();
+		} finally {
+			meecrowave.close();
+		}
+	}
 }

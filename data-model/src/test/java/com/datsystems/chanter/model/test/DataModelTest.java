@@ -8,9 +8,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
-import com.datsystems.chanter.model.Module.AttributeType;
 import com.datsystems.chanter.model.RObject;
 
 public class DataModelTest {
@@ -29,7 +29,7 @@ public class DataModelTest {
   @Test
   public void testCreateModule() {
     Module m1 = new Module("my module", "module description");
-    m1.addAttribute("category", AttributeType.STRING);
+    m1.addAttribute("category", Attribute.AttributeType.STRING, null);
     RObject r = new RObject("test requirement");
     r.setAttribute("category", "my category");
     

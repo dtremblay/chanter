@@ -3,7 +3,6 @@ package com.datsystems.chanter.model;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * 
@@ -16,19 +15,30 @@ import java.util.Properties;
  */
 public class Baseline {
   String guid;
-  String name;
+  private String name;
   String description;
   Date created;
   Boolean locked = false;
-  List<RObject> rObjects;
-  Properties attributes;
+  List<String> reqIds;
   
-  public Baseline(String description) {
-    this.description = description;
-    rObjects = new ArrayList<>();
+  public Baseline(String name) {
+    this.name = name;
+    reqIds = new ArrayList<>();
   }
   
-  public List<RObject> getRObjects() {
-    return rObjects;
+  public List<String> getReqIds() {
+    return reqIds;
+  }
+  public String getName() {
+	  return name;
+  }
+  public void setName(String value) {
+	  name = value;
+  }
+  public void setLocked(boolean value) {
+	  locked = value;
+  }
+  public void addReqId(String id) {
+	  reqIds.add(id);
   }
 }

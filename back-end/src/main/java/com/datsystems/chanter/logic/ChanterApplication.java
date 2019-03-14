@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.Consumes;
@@ -23,11 +24,14 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.datsystems.chanter.logic.parsers.ChanterParseEventListener;
+import com.datsystems.chanter.logic.parsers.ChanterParserException;
+import com.datsystems.chanter.logic.parsers.HtmlParser;
+import com.datsystems.chanter.logic.parsers.PdfParser;
+import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
-import com.datsystems.chanter.model.Module.AttributeType;
 import com.datsystems.chanter.model.RObject;
-
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -79,6 +83,7 @@ public class ChanterApplication {
 
 	/**
 	 * Force a connection to the Mongo database
+	 * 
 	 * @param mongoURI
 	 * @param dbName
 	 */
@@ -88,7 +93,7 @@ public class ChanterApplication {
 		// Load the MongoDB modules
 		loadModules();
 	}
-	
+
 	@GET
 	public List<Module> getModules() {
 		return modules;
@@ -109,7 +114,7 @@ public class ChanterApplication {
 	@Consumes("application/json")
 	public Module createModule(Module module) throws ChanterException {
 		// Check for duplicate names
-		for (Module m: modules) {
+		for (Module m : modules) {
 			if (m.getName().equalsIgnoreCase(module.getName())) {
 				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
 			}
@@ -137,6 +142,16 @@ public class ChanterApplication {
 			}
 		}
 	}
+
+	class ModuleClosure {
+		Module module;
+
+		public ModuleClosure(Module value) {
+			this.module = value;
+		}
+	}
+
+	// Reading a module may take a long time, so we may have to use threads here.
 	private Module readModuleFromDb(String name) {
 		Module m = null;
 		MongoCollection<Document> coll = db.getCollection(name);
@@ -145,38 +160,76 @@ public class ChanterApplication {
 			if (props != null) {
 				m = new Module(name, props.getString("description"));
 				m.setGuid(props.get("_id").toString());
+
 				// Now read the attributes
 				Document attrDoc = (Document) props.get("attributes");
 				if (attrDoc != null) {
-					for (Entry<String, Object> entry: attrDoc.entrySet()) {
-						m.addAttribute(entry.getKey(), AttributeType.valueOf((String)entry.getValue()));
+					for (Entry<String, Object> entry : attrDoc.entrySet()) {
+						Document doc = (Document) entry.getValue();
+						m.addAttribute(entry.getKey(), Attribute.AttributeType.valueOf(doc.getString("type")),
+								doc.getString("default"));
 					}
 				}
 			}
+			// Create a closure for the module - otherwise we cannot addRequirements to it.
+			final ModuleClosure modClosure = new ModuleClosure(m);
+
+			// Find all requirements stored in the database
+			coll.find(new Document("name", "Requirement")).forEach((Consumer<Document>)reqDoc -> {
+				RObject r = new RObject();
+				r.setCreated(reqDoc.getDate("created"));
+				r.setGuid(reqDoc.get("_id").toString());
+				r.setName(reqDoc.getString("name"));
+				modClosure.module.addRequirement(r);
+
+			});
+			// Now match the requirements for the baselines
+			coll.find(new Document("name", "Baseline")).forEach((Consumer<Document>)blDoc -> {
+				Baseline b = new Baseline(blDoc.getString("name"));
+				String reqIdsStr = blDoc.getString("requirements");
+				// Split the requiremend ids
+				String[] reqIds = reqIdsStr.split(",");
+				for (String reqId : reqIds) {
+					b.addReqId(reqId);
+				}
+
+				modClosure.module.addBaseline(b);
+			});
 		}
 		return m;
 	}
-	
+
 	// Convert a Module object to Document
 	private Document convertModuleToDocument(Module m) {
 		Document props = new Document("name", "Properties").append("description", m.getDescription());
 		if (m.getGuid() != null) {
 			props.append("_id", new ObjectId(m.getGuid()));
 		}
+		// Save the attributes
 		Document attrDoc = new Document();
-		 
-		for (Entry<String, AttributeType> entry: m.getAttributes().entrySet()) {
-			attrDoc.append(entry.getKey(), entry.getValue().toString());
+		for (Entry<String, Attribute> entry : m.getAttributes().entrySet()) {
+			Attribute attr = entry.getValue();
+			Document subDoc = new Document().append("name", entry.getKey()).append("type", attr.getType().toString())
+					.append("default", attr.getDefaultValue());
+			attrDoc.append(entry.getKey(), subDoc);
 		}
 		props.append("attributes", attrDoc);
+
+		// Save the baselines
+		Document blDoc = new Document();
+		for (Baseline bl : m.getBaselines()) {
+			Document subDoc = new Document().append("name", bl.getName());
+			blDoc.append(bl.getName(), subDoc);
+		}
+		props.append("baselines", blDoc);
 		return props;
 	}
-	
+
 	// Persist the properties of a module
 	private void persistModuleProperties(Module m) {
 		if (db != null) {
 			MongoCollection<Document> collection = db.getCollection(m.getName());
-			if (collection  != null) {
+			if (collection != null) {
 				Document props = convertModuleToDocument(m);
 				if (props.get("_id") != null) {
 					collection.replaceOne(new Document("_id", new ObjectId(m.getGuid())), props);
@@ -187,6 +240,14 @@ public class ChanterApplication {
 			}
 		}
 	}
+
+	// Add a requirement to the current baseline of a module
+	private void persistModuleRequirement(Module m, RObject r) {
+		if (db != null) {
+
+		}
+	}
+
 	@DELETE
 	@Path("{name}")
 	public Module deleteModule(@PathParam("name") String name) {
@@ -200,7 +261,7 @@ public class ChanterApplication {
 		}
 		return m;
 	}
-	
+
 	@GET
 	@Path("{name}/requirements")
 	public List<RObject> getRequirementsForModule(@PathParam("name") String name) {
@@ -231,6 +292,10 @@ public class ChanterApplication {
 	public RObject createRequirementInModule(@PathParam("name") String name, RObject r) {
 		Module m = getModuleByName(name);
 		if (m != null) {
+			if (db != null) {
+				logger.info("Adding Requirement {} to module {}", r.getName(), m.getName());
+				persistModuleRequirement(m, r);
+			}
 			return m.addRequirement(r);
 		}
 		throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -270,18 +335,19 @@ public class ChanterApplication {
 
 	@GET
 	@Path("{name}/attributes")
-	public Map<String, AttributeType> getAttributes(@PathParam("name") String name) {
+	public Map<String, Attribute> getAttributes(@PathParam("name") String name) {
 		Module m = getModuleByName(name);
 		return m.getAttributes();
 	}
 
 	@POST
 	@Path("{name}/attributes/{attName}")
-	public void saveAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName, @PathParam("attType") String type) {
+	public void saveAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName,
+			@PathParam("attType") String attType, @PathParam("attDefault") String attDefaultValue) {
 		Module m = getModuleByName(moduleName);
 		if (m != null) {
-			AttributeType attrType = AttributeType.valueOf(type);
-			m.addAttribute(attName, attrType);
+			Attribute.AttributeType attrType = Attribute.AttributeType.valueOf(attType);
+			m.addAttribute(attName, attrType, attDefaultValue);
 			persistModuleProperties(m);
 		}
 	}
@@ -299,5 +365,61 @@ public class ChanterApplication {
 	public void closeMongoDatabase() {
 		mongoClient.close();
 		db = null;
+	}
+
+	@POST
+	@Path("{name}/import/html")
+	public Module importFromHtml(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
+		// parse the document into requirements
+		Module imported = new Module(moduleName, "Imported module from: " + filename);
+		imported.setCreatedDate(new Date());
+		imported.setCreatedBy("current-user");
+
+		HtmlParser parser = new HtmlParser();
+		try {
+			parser.parse(filename);
+			parser.registerListener(new ChanterParseEventListener() {
+
+				@Override
+				public void pushEvent(String event, RObject r) {
+					logger.info("Parsing event: {}", event);
+					if (r != null) {
+						imported.addRequirement(r);
+					}
+				}
+			});
+		} catch (ChanterParserException cpe) {
+			logger.error(cpe.getMessage());
+		}
+
+		return imported;
+	}
+
+	@POST
+	@Path("{name}/import/pdf")
+	public Module importFromPdf(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
+		// parse the document into requirements
+		Module imported = new Module(moduleName, "Imported module from: " + filename);
+		imported.setCreatedDate(new Date());
+		imported.setCreatedBy("current-user");
+
+		PdfParser parser = new PdfParser();
+		try {
+			parser.parse(filename);
+			parser.registerListener(new ChanterParseEventListener() {
+
+				@Override
+				public void pushEvent(String event, RObject r) {
+					logger.info("Parsing event: {}", event);
+					if (r != null) {
+						imported.addRequirement(r);
+					}
+				}
+			});
+		} catch (ChanterParserException cpe) {
+			logger.error(cpe.getMessage());
+		}
+
+		return imported;
 	}
 }
