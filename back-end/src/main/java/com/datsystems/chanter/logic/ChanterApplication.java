@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -19,6 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.util.Strings;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -156,7 +158,7 @@ public class ChanterApplication {
 		Module m = null;
 		MongoCollection<Document> coll = db.getCollection(name);
 		if (coll != null) {
-			Document props = coll.find(new Document("name", "Properties")).first();
+			Document props = coll.find(new Document("type", "Properties")).first();
 			if (props != null) {
 				m = new Module(name, props.getString("description"));
 				m.setGuid(props.get("_id").toString());
@@ -175,7 +177,7 @@ public class ChanterApplication {
 			final ModuleClosure modClosure = new ModuleClosure(m);
 
 			// Find all requirements stored in the database
-			coll.find(new Document("name", "Requirement")).forEach((Consumer<Document>)reqDoc -> {
+			coll.find(new Document("type", "Requirement")).forEach((Consumer<Document>) reqDoc -> {
 				RObject r = new RObject();
 				r.setCreated(reqDoc.getDate("created"));
 				r.setGuid(reqDoc.get("_id").toString());
@@ -184,9 +186,9 @@ public class ChanterApplication {
 
 			});
 			// Now match the requirements for the baselines
-			coll.find(new Document("name", "Baseline")).forEach((Consumer<Document>)blDoc -> {
+			coll.find(new Document("type", "Baseline")).forEach((Consumer<Document>) blDoc -> {
 				Baseline b = new Baseline(blDoc.getString("name"));
-				String reqIdsStr = blDoc.getString("requirements");
+				String reqIdsStr = blDoc.getString("ids");
 				// Split the requiremend ids
 				String[] reqIds = reqIdsStr.split(",");
 				for (String reqId : reqIds) {
@@ -201,7 +203,7 @@ public class ChanterApplication {
 
 	// Convert a Module object to Document
 	private Document convertModuleToDocument(Module m) {
-		Document props = new Document("name", "Properties").append("description", m.getDescription());
+		Document props = new Document("type", "Properties").append("description", m.getDescription());
 		if (m.getGuid() != null) {
 			props.append("_id", new ObjectId(m.getGuid()));
 		}
@@ -214,14 +216,6 @@ public class ChanterApplication {
 			attrDoc.append(entry.getKey(), subDoc);
 		}
 		props.append("attributes", attrDoc);
-
-		// Save the baselines
-		Document blDoc = new Document();
-		for (Baseline bl : m.getBaselines()) {
-			Document subDoc = new Document().append("name", bl.getName());
-			blDoc.append(bl.getName(), subDoc);
-		}
-		props.append("baselines", blDoc);
 		return props;
 	}
 
@@ -237,6 +231,11 @@ public class ChanterApplication {
 					collection.insertOne(props);
 					m.setGuid(props.get("_id").toString());
 				}
+				// Save the baselines
+				for (Baseline bl : m.getBaselines()) {
+					persistBaseline(collection, bl);
+					
+				}
 			}
 		}
 	}
@@ -244,7 +243,30 @@ public class ChanterApplication {
 	// Add a requirement to the current baseline of a module
 	private void persistModuleRequirement(Module m, RObject r) {
 		if (db != null) {
-
+			MongoCollection<Document> collection = db.getCollection(m.getName());
+			if (collection != null) {
+				Document requirement = new Document("type","Requirement").append("name", r.getName()).append("create-on", r.getCreated())
+						.append("version", r.getVersion());
+				collection.insertOne(requirement);
+				r.setGuid(requirement.get("_id").toString());
+			}
+		} else {
+			r.setGuid(UUID.randomUUID().toString());
+		}
+	}
+	
+	private void persistBaseline(MongoCollection<Document> collection, Baseline bl) {
+		if (collection != null) {
+			Document blDoc = new Document().append("type", "Baseline").append("name", bl.getName());
+			blDoc.append("ids", Strings.join(bl.getReqIds(), ','));
+			if (bl.getGuid() != null) {
+				collection.replaceOne(new Document("_id", new ObjectId(bl.getGuid())), blDoc);
+			} else {
+				collection.insertOne(blDoc);
+				bl.setGuid(blDoc.get("_id").toString());
+			}
+		} else {
+			bl.setGuid(UUID.randomUUID().toString());
 		}
 	}
 
@@ -292,11 +314,20 @@ public class ChanterApplication {
 	public RObject createRequirementInModule(@PathParam("name") String name, RObject r) {
 		Module m = getModuleByName(name);
 		if (m != null) {
+			logger.info("Adding Requirement {} to module {}", r.getName(), m.getName());
+			m.addRequirement(r);
+			persistModuleRequirement(m, r);
+			
+			// Update the baseline
+			Baseline bl = m.getCurrentBaseline();
+			bl.addReqId(r.getGuid());
+			MongoCollection<Document> collection = null;
 			if (db != null) {
-				logger.info("Adding Requirement {} to module {}", r.getName(), m.getName());
-				persistModuleRequirement(m, r);
+				collection = db.getCollection(m.getName());
 			}
-			return m.addRequirement(r);
+			persistBaseline(collection, bl);
+			
+			return r;
 		}
 		throw new WebApplicationException(Response.Status.NOT_FOUND);
 	}
@@ -322,12 +353,20 @@ public class ChanterApplication {
 		if (m != null) {
 			RObject oldR = getRequirementByIdForModule(name, r.getGuid());
 			// Create a new requirement from the old one
-			RObject newR = new RObject(oldR);
+			RObject newR = oldR.uprev();
 			oldR.setDeleted(true);
 			oldR.setUpdated(new Date());
+			m.getCurrentBaseline().getReqIds().remove(oldR.getGuid());
 			// Copy all attributes for the new object into the new instance
-			newR.setText(r.getText());
+
 			m.getrObjects().add(newR);
+			persistModuleRequirement(m, newR);
+			m.getCurrentBaseline().getReqIds().add(newR.getGuid());
+			MongoCollection<Document> collection = null;
+			if (db != null) {
+				collection = db.getCollection(m.getName());
+			}
+			persistBaseline(collection, m.getCurrentBaseline());
 			return newR;
 		}
 		throw new WebApplicationException(Response.Status.NOT_FOUND);

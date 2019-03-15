@@ -123,18 +123,16 @@ public class Module {
 	}
 
 	public RObject addRequirement(RObject r) {
-		RObject newR = new RObject(r);
 		// Whenever a new requirement is added, copy its attributes
 		for (String key : attributes.keySet()) {
-			if (newR.getAttributes() != null && newR.getAttributes().containsKey(key)) {
-				newR.setAttribute(key, newR.getAttributes().get(key));
+			if (r.getAttributes() != null && r.getAttributes().containsKey(key)) {
+				r.setAttribute(key, r.getAttributes().get(key));
 			} else {
-				newR.setAttribute(key, "");
+				r.setAttribute(key, "");
 			}
 		}
-		rObjects.add(newR);
-		currentBaseline.reqIds.add(newR.getGuid());
-		return newR;
+		rObjects.add(r);
+		return r;
 	}
 
 	public String getGuid() {
@@ -151,5 +149,9 @@ public class Module {
 			}
 		}
 		return null;
+	}
+
+	public Baseline getCurrentBaseline() {
+		return currentBaseline;
 	}
 }

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.junit.Test;
 
@@ -21,9 +22,9 @@ public class DataModelTest {
     assertEquals(1, r1.getVersion());
     
     // Copy the requirement, check version is updated
-    RObject r2 = new RObject(r1);
+    RObject r2 = r1.uprev();
     assertEquals(2, r2.getVersion());
-    assertEquals("test", r2.getText());
+    assertEquals("test", r2.getName());
   }
   
   @Test
@@ -31,6 +32,7 @@ public class DataModelTest {
     Module m1 = new Module("my module", "module description");
     m1.addAttribute("category", Attribute.AttributeType.STRING, null);
     RObject r = new RObject("test requirement");
+    r.setGuid(UUID.randomUUID().toString());
     r.setAttribute("category", "my category");
     
     r = m1.addRequirement(r);

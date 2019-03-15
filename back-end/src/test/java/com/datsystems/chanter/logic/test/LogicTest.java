@@ -36,7 +36,7 @@ public class LogicTest {
 
 		RObject req = app.createRequirementInModule(newModule.getName(), new RObject("requirement1"));
 		assertNotNull(req.getGuid());
-		assertNotNull(req.getText());
+		assertNotNull(req.getName());
 	}
 
 	@Test
@@ -50,7 +50,7 @@ public class LogicTest {
 		assertEquals(2, blSRR.getReqIds().size());
 
 		// Now, update one of the requirements
-		RObject updatedReq = new RObject(req1);
+		RObject updatedReq = req1;
 		updatedReq.setText("updated requirement");
 		app.updateRequirementInModule(newModule.getName(), updatedReq);
 		// the module now should contain 3 objects

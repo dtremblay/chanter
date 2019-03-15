@@ -33,39 +33,12 @@ public class RObject {
 	/**
 	 * Simple constructor with only text supplied
 	 */
-	public RObject(String text) {
-		this.guid = UUID.randomUUID().toString();
+	public RObject(String name) {
 		this.version = 1;
 		this.created = new Date();
 		this.updated = new Date();
-		this.text = text;
+		this.name = name;
 		this.attributes = new HashMap<>();
-	}
-
-	/**
-	 * Allow copying an existing requirement
-	 * 
-	 * @return
-	 */
-	public RObject(RObject r) {
-		if (r.getGuid() != null) {
-			this.guid = r.getGuid();
-			this.created = r.getCreated();
-			this.updated = new Date();
-		} else {
-			this.guid = UUID.randomUUID().toString();
-			this.created = new Date();
-			this.updated = this.created;
-		}
-		this.version = r.getVersion() + 1;
-		this.text = r.getText();
-
-		if (r.getAttributes() != null) {
-			this.attributes = r.getAttributes();
-		} else {
-			this.attributes = new HashMap<>();
-		}
-		this.type = r.getType();
 	}
 
 	public String getGuid() {
@@ -142,6 +115,28 @@ public class RObject {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	/**
+	 * Update an existing requirement
+	 * 
+	 * @return
+	 */
+	public RObject uprev() {
+		RObject r = new RObject();
+		r.setCreated(this.getCreated());
+		r.setUpdated(new Date());
+		r.setVersion(this.getVersion() + 1);
+		r.setText(this.getText());
+		r.setName(this.getName());
+
+		if (this.getAttributes() != null) {
+			r.setAttributes(this.getAttributes());
+		} else {
+			r.attributes = new HashMap<>();
+		}
+		r.type = this.getType();
+		return r;
 	}
 
 }

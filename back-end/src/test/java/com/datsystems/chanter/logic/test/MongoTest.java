@@ -83,7 +83,7 @@ public class MongoTest {
 
 	private void createFakeRequirements(int count, String moduleName, Map<String, Attribute> attributes) {
 		for (int i = 0; i < count; i++) {
-			RObject r = new RObject("fake_" + count);
+			RObject r = new RObject("fake_" + i);
 			for (Entry<String, Attribute> entry : attributes.entrySet()) {
 				r.setAttribute(entry.getKey(), entry.getValue().getDefaultValue());
 			}
