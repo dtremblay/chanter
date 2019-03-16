@@ -24,10 +24,12 @@ public class RObject {
 	private String type;
 	private String text;
 	private String name;
+	private String modifiedBy;
 	private Map<String, String> attributes;
 
 	// JPA requires a default constructor.
 	public RObject() {
+		this.attributes = new HashMap<>();
 	}
 
 	/**
@@ -137,6 +139,13 @@ public class RObject {
 		}
 		r.type = this.getType();
 		return r;
+	}
+
+	public String getLastModifiedBy() {
+		return modifiedBy;
+	}
+	public void setLastModifiedBy(String value) {
+		modifiedBy = value;
 	}
 
 }

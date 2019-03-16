@@ -38,8 +38,6 @@ public class Module {
 		this.description = description;
 		this.rObjects = new ArrayList<>();
 		this.baselines = new ArrayList<>();
-		currentBaseline = new Baseline("current");
-		this.baselines.add(0, currentBaseline);
 		this.attributes = new HashMap<>();
 	}
 
@@ -82,7 +80,7 @@ public class Module {
 	 * @param b
 	 */
 	public void addBaseline(Baseline b) {
-		for (String rid : currentBaseline.getReqIds()) {
+		for (String rid : getCurrentBaseline().getReqIds()) {
 			b.addReqId(rid);
 		}
 		b.setLocked(true);
@@ -152,6 +150,10 @@ public class Module {
 	}
 
 	public Baseline getCurrentBaseline() {
+		if (currentBaseline == null) {
+			currentBaseline = new Baseline("current");
+			this.baselines.add(0, currentBaseline);
+		}
 		return currentBaseline;
 	}
 }

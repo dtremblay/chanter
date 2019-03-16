@@ -109,7 +109,7 @@ public class ChanterApplication {
 				return m;
 			}
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND);
+		return null;
 	}
 
 	@POST
@@ -180,8 +180,12 @@ public class ChanterApplication {
 			coll.find(new Document("type", "Requirement")).forEach((Consumer<Document>) reqDoc -> {
 				RObject r = new RObject();
 				r.setCreated(reqDoc.getDate("created"));
+				r.setUpdated(reqDoc.getDate("updated"));
+				r.setLastModifiedBy(reqDoc.getString("last-modified-by"));
 				r.setGuid(reqDoc.get("_id").toString());
 				r.setName(reqDoc.getString("name"));
+				r.setVersion(reqDoc.getInteger("version", 1));
+				r.setText(reqDoc.getString("description"));
 				modClosure.module.addRequirement(r);
 
 			});
@@ -189,13 +193,16 @@ public class ChanterApplication {
 			coll.find(new Document("type", "Baseline")).forEach((Consumer<Document>) blDoc -> {
 				Baseline b = new Baseline(blDoc.getString("name"));
 				String reqIdsStr = blDoc.getString("ids");
-				// Split the requiremend ids
-				String[] reqIds = reqIdsStr.split(",");
-				for (String reqId : reqIds) {
-					b.addReqId(reqId);
+				
+				if (reqIdsStr != null && !reqIdsStr.isEmpty()) {
+					// Split the requirement ids
+					String[] reqIds = reqIdsStr.split(",");
+					for (String reqId : reqIds) {
+						b.addReqId(reqId);
+					}
+					
+					modClosure.module.addBaseline(b);
 				}
-
-				modClosure.module.addBaseline(b);
 			});
 		}
 		return m;
