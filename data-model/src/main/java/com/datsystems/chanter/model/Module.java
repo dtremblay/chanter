@@ -80,11 +80,21 @@ public class Module {
 	 * @param b
 	 */
 	public void addBaseline(Baseline b) {
-		for (String rid : getCurrentBaseline().getReqIds()) {
-			b.addReqId(rid);
-		}
-		b.setLocked(true);
 		baselines.add(b);
+		if (b.getName().equalsIgnoreCase("current")) {
+			currentBaseline = b;
+		}
+	}
+	
+	public Baseline createBaseline(String name, String description) {
+		Baseline bl = new Baseline(name);
+		bl.setDescription(description);
+		bl.setLocked(true);
+		for (String rid : getCurrentBaseline().getReqIds()) {
+			bl.addReqId(rid);
+		}
+		addBaseline(bl);
+		return bl;
 	}
 
 	public List<RObject> getrObjects() {
@@ -156,4 +166,13 @@ public class Module {
 		}
 		return currentBaseline;
 	}
+	public Baseline getBaselineByName(String value) {
+		for (Baseline bl : baselines) {
+			if (bl.getName().equals(value)) {
+				return bl;
+			}
+		}
+		return null;
+	}
+	
 }

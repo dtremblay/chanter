@@ -53,4 +53,13 @@ public class Baseline {
 	public void setGuid(String value) {
 		guid = value;
 	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
 }

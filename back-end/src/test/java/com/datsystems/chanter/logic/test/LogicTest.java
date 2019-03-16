@@ -46,7 +46,7 @@ public class LogicTest {
 		app.createRequirementInModule(newModule.getName(), new RObject("requirement2"));
 
 		// When a new baseline is created, all requirements are "copied"
-		Baseline blSRR = app.createBaseline(newModule.getName(), "SRR");
+		Baseline blSRR = app.createBaseline(newModule.getName(), "SRR", "System Requirement Review");
 		assertEquals(2, blSRR.getReqIds().size());
 
 		// Now, update one of the requirements
@@ -57,7 +57,7 @@ public class LogicTest {
 		assertEquals(3, newModule.getrObjects().size());
 
 		// The baseline still contains only two requirements
-		Baseline b2 = app.createBaseline(newModule.getName(), "PDR");
+		Baseline b2 = app.createBaseline(newModule.getName(), "PDR", "Preliminary Design Review");
 		assertEquals(2, b2.getReqIds().size());
 	}
 

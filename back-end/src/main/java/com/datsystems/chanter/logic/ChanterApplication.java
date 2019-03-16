@@ -186,12 +186,21 @@ public class ChanterApplication {
 				r.setName(reqDoc.getString("name"));
 				r.setVersion(reqDoc.getInteger("version", 1));
 				r.setText(reqDoc.getString("description"));
+				for (Entry<String, Attribute> entry : modClosure.module.getAttributes().entrySet()) {
+					String value = reqDoc.getString(entry.getKey());
+					if (value != null) {
+						r.getAttributes().put(entry.getKey(), value);
+					} else {
+						r.getAttributes().put(entry.getKey(), entry.getValue().getDefaultValue());
+					}
+				}
 				modClosure.module.addRequirement(r);
 
 			});
 			// Now match the requirements for the baselines
 			coll.find(new Document("type", "Baseline")).forEach((Consumer<Document>) blDoc -> {
 				Baseline b = new Baseline(blDoc.getString("name"));
+				b.setGuid(blDoc.get("_id").toString());
 				String reqIdsStr = blDoc.getString("ids");
 				
 				if (reqIdsStr != null && !reqIdsStr.isEmpty()) {
@@ -254,6 +263,10 @@ public class ChanterApplication {
 			if (collection != null) {
 				Document requirement = new Document("type","Requirement").append("name", r.getName()).append("create-on", r.getCreated())
 						.append("version", r.getVersion());
+				for (Entry<String, Attribute> entry : m.getAttributes().entrySet()) {
+					String attValue = r.getAttributes().get(entry.getKey());
+					requirement.append(entry.getKey(), attValue!=null?attValue:entry.getValue().getDefaultValue());
+				}
 				collection.insertOne(requirement);
 				r.setGuid(requirement.get("_id").toString());
 			}
@@ -342,12 +355,15 @@ public class ChanterApplication {
 	@POST
 	@Consumes("application/json")
 	@Path("{name}/baselines")
-	public Baseline createBaseline(@PathParam("name") String name, String description) {
-		Module m = getModuleByName(name);
+	public Baseline createBaseline(@PathParam("name") String modName, String blName, String description) {
+		Module m = getModuleByName(modName);
 		if (m != null) {
-			Baseline b = new Baseline(description);
-			m.addBaseline(b);
-			return b;
+			Baseline bl = m.createBaseline(blName, description);
+			if (db != null) {
+				MongoCollection<Document> collection = db.getCollection(modName);
+				persistBaseline(collection, bl);
+			}
+			return bl;
 		}
 		throw new WebApplicationException(Response.Status.NOT_FOUND);
 	}
