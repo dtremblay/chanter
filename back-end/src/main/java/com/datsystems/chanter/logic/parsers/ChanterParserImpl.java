@@ -11,9 +11,8 @@ import com.datsystems.chanter.model.RObject;
  *
  */
 abstract class ChanterParserImpl implements ChanterParser {
-	
 	// Not very likely to have multiple listeners, but just in case...
-	List<ChanterParseEventListener> listeners = new ArrayList<>();
+	private List<ChanterParseEventListener> listeners = new ArrayList<>();
 
 	public void registerListener(ChanterParseEventListener listener) {
 		listeners.add(listener);

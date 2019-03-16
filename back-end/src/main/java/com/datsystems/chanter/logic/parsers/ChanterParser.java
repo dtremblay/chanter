@@ -1,8 +1,5 @@
 package com.datsystems.chanter.logic.parsers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.datsystems.chanter.model.RObject;
 
 /**
@@ -11,9 +8,6 @@ import com.datsystems.chanter.model.RObject;
  *
  */
 public interface ChanterParser {
-	// Not very likely to have multiple listeners, but just in case...
-	List<ChanterParseEventListener> listeners = new ArrayList<>();
-	
 	/**
 	 * Initiate reading a file of the appropriate type.
 	 * @param filename

@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -26,7 +27,7 @@ import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datsystems.chanter.logic.parsers.ChanterParseEventListener;
+import com.datsystems.chanter.logic.parsers.ChanterParser;
 import com.datsystems.chanter.logic.parsers.ChanterParserException;
 import com.datsystems.chanter.logic.parsers.HtmlParser;
 import com.datsystems.chanter.logic.parsers.PdfParser;
@@ -53,7 +54,7 @@ import com.mongodb.client.MongoDatabase;
 @ApplicationScoped
 @Produces("application/json")
 public class ChanterApplication {
-	// Mew logger
+	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
 	MongoClient mongoClient;
 	// We have a single database for Chanter
@@ -202,14 +203,14 @@ public class ChanterApplication {
 				Baseline b = new Baseline(blDoc.getString("name"));
 				b.setGuid(blDoc.get("_id").toString());
 				String reqIdsStr = blDoc.getString("ids");
-				
+
 				if (reqIdsStr != null && !reqIdsStr.isEmpty()) {
 					// Split the requirement ids
 					String[] reqIds = reqIdsStr.split(",");
 					for (String reqId : reqIds) {
 						b.addReqId(reqId);
 					}
-					
+
 					modClosure.module.addBaseline(b);
 				}
 			});
@@ -250,7 +251,7 @@ public class ChanterApplication {
 				// Save the baselines
 				for (Baseline bl : m.getBaselines()) {
 					persistBaseline(collection, bl);
-					
+
 				}
 			}
 		}
@@ -261,11 +262,12 @@ public class ChanterApplication {
 		if (db != null) {
 			MongoCollection<Document> collection = db.getCollection(m.getName());
 			if (collection != null) {
-				Document requirement = new Document("type","Requirement").append("name", r.getName()).append("create-on", r.getCreated())
-						.append("version", r.getVersion());
+				Document requirement = new Document("type", "Requirement").append("name", r.getName())
+						.append("create-on", r.getCreated()).append("version", r.getVersion());
 				for (Entry<String, Attribute> entry : m.getAttributes().entrySet()) {
 					String attValue = r.getAttributes().get(entry.getKey());
-					requirement.append(entry.getKey(), attValue!=null?attValue:entry.getValue().getDefaultValue());
+					requirement.append(entry.getKey(),
+							attValue != null ? attValue : entry.getValue().getDefaultValue());
 				}
 				collection.insertOne(requirement);
 				r.setGuid(requirement.get("_id").toString());
@@ -274,7 +276,7 @@ public class ChanterApplication {
 			r.setGuid(UUID.randomUUID().toString());
 		}
 	}
-	
+
 	private void persistBaseline(MongoCollection<Document> collection, Baseline bl) {
 		if (collection != null) {
 			Document blDoc = new Document().append("type", "Baseline").append("name", bl.getName());
@@ -337,7 +339,7 @@ public class ChanterApplication {
 			logger.info("Adding Requirement {} to module {}", r.getName(), m.getName());
 			m.addRequirement(r);
 			persistModuleRequirement(m, r);
-			
+
 			// Update the baseline
 			Baseline bl = m.getCurrentBaseline();
 			bl.addReqId(r.getGuid());
@@ -346,7 +348,7 @@ public class ChanterApplication {
 				collection = db.getCollection(m.getName());
 			}
 			persistBaseline(collection, bl);
-			
+
 			return r;
 		}
 		throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -432,50 +434,29 @@ public class ChanterApplication {
 	@POST
 	@Path("{name}/import/html")
 	public Module importFromHtml(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
-		// parse the document into requirements
-		Module imported = new Module(moduleName, "Imported module from: " + filename);
-		imported.setCreatedDate(new Date());
-		imported.setCreatedBy("current-user");
-
 		HtmlParser parser = new HtmlParser();
-		try {
-			parser.parse(filename);
-			parser.registerListener(new ChanterParseEventListener() {
-
-				@Override
-				public void pushEvent(String event, RObject r) {
-					logger.info("Parsing event: {}", event);
-					if (r != null) {
-						imported.addRequirement(r);
-					}
-				}
-			});
-		} catch (ChanterParserException cpe) {
-			logger.error(cpe.getMessage());
-		}
-
-		return imported;
+		return wireParser(parser, moduleName, filename);
 	}
 
 	@POST
 	@Path("{name}/import/pdf")
 	public Module importFromPdf(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
+		PdfParser parser = new PdfParser();
+		return wireParser(parser, moduleName, filename);
+	}
+	
+	private Module wireParser(ChanterParser parser, String moduleName, String filename) {
 		// parse the document into requirements
 		Module imported = new Module(moduleName, "Imported module from: " + filename);
 		imported.setCreatedDate(new Date());
 		imported.setCreatedBy("current-user");
 
-		PdfParser parser = new PdfParser();
 		try {
 			parser.parse(filename);
-			parser.registerListener(new ChanterParseEventListener() {
-
-				@Override
-				public void pushEvent(String event, RObject r) {
-					logger.info("Parsing event: {}", event);
-					if (r != null) {
-						imported.addRequirement(r);
-					}
+			parser.registerListener((event, r) -> {
+				logger.info("Parsing event: {}", event);
+				if (r != null) {
+					imported.addRequirement(r);
 				}
 			});
 		} catch (ChanterParserException cpe) {
