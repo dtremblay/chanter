@@ -1,0 +1,356 @@
+{
+	"info": {
+		"_postman_id": "fa71571f-b7f1-4be0-2c6f-5aee76508e1c",
+		"name": "Chanter",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Modules",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules"
+					]
+				},
+				"description": "Get Mdules"
+			},
+			"response": []
+		},
+		{
+			"name": "Create Module",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "49218484-a1e5-48fe-91d4-dc677d7c558a",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"postman.setGlobalVariable(\"module_guid\", jsonData.guid);",
+							"postman.setGlobalVariable(\"module_name\", jsonData.name)",
+							"console.log(postman.getGlobalVariable(\"module_guid\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"mod5\",\n  \"description\": \"description 5\"\n}"
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add first requirement",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "35f6f479-e1e6-4bc8-8b5a-84c631be27a4",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"",
+							"postman.setGlobalVariable(\"first_req_guid\", jsonData.guid);",
+							"console.log(postman.getGlobalVariable(\"first_req_guid\"));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"text\": \"This is my first requirement {{module_guid}}\",\n  \"name\": \"Requirement Name\"\n}"
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules/{{module_name}}",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules",
+						"{{module_name}}"
+					]
+				},
+				"description": "Create Requirement"
+			},
+			"response": []
+		},
+		{
+			"name": "Add attribute to module",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules/{{module_name}}/attributes?attName=attribute1&attType=STRING&attDefaultValue=default_value",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules",
+						"{{module_name}}",
+						"attributes"
+					],
+					"query": [
+						{
+							"key": "attName",
+							"value": "attribute1"
+						},
+						{
+							"key": "attType",
+							"value": "STRING"
+						},
+						{
+							"key": "attDefaultValue",
+							"value": "default_value"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GET Attributes",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules/{{module_name}}/attributes",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules",
+						"{{module_name}}",
+						"attributes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add second requirement",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"text\": \"This is my second requirement in {{module_guid}}\",\n  \"name\": \"Second Requirement\",\n  \"attributes\" : {\n\t\"attribute1\": \"This is the first use of this parameter\"\n  }\n}"
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules/{{module_name}}?",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules",
+						"{{module_name}}"
+					],
+					"query": [
+						{
+							"key": "module",
+							"value": "test",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Create Requirement"
+			},
+			"response": []
+		},
+		{
+			"name": "Add third requirement",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d91b2299-951e-4df1-84cb-7d696ed8bf58",
+						"exec": [
+							"// The attribute1 should be set to the default value.",
+							"var jsonData = JSON.parse(responseBody);",
+							"console.log(jsonData.attributes.attribute1);",
+							"tests[\"Check Default Attribute Value\"] = (jsonData.attributes.attribute1 === \"default_value\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"text\": \"This is my third requirement {{module_guid}}\",\n  \"name\": \"Third one\"\n}"
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules/{{module_name}}?",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules",
+						"{{module_name}}"
+					],
+					"query": [
+						{
+							"key": "module",
+							"value": "test",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Create Requirement"
+			},
+			"response": []
+		},
+		{
+			"name": "Update first requirement",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "eb4c9969-e910-4a42-8196-522829969a40",
+						"exec": [
+							"var jsonData = JSON.parse(responseBody);",
+							"tests[\"Requirement name was updated\"] = (jsonData.name === \"updated\");",
+							"tests[\"Version was updated\"] = (jsonData.version == 2);",
+							"tests[\"Requirement test was updated\"] = (jsonData.text === \"This is my first requirement {{module_guid}} - updated in Chanter test - version should be 2\")",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"guid\":\"{{first_req_guid}}\",\n  \"text\": \"This is my first requirement {{module_guid}} - updated in Chanter test - version should be 2\",\n  \"name\": \"updated\"\n}"
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/modules/{{module_name}}/requirements?",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"modules",
+						"{{module_name}}",
+						"requirements"
+					],
+					"query": [
+						{
+							"key": "module",
+							"value": "test",
+							"disabled": true
+						}
+					]
+				},
+				"description": "Create Requirement"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "3b3e6d76-ef56-4eae-b6ec-836d3aed9bf5",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "48df63c6-7475-4e16-a7e0-77aa2be4aad7",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "466edb0c-c831-4499-b4ad-edc5d285340c",
+			"key": "HostIp",
+			"value": "192.168.99.100",
+			"type": "string"
+		}
+	]
+}

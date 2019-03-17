@@ -12,6 +12,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -126,6 +127,8 @@ public class ChanterApplication {
 			logger.info("Creating Mongo Collection {}", module.getName());
 			db.createCollection(module.getName());
 			persistModuleProperties(module);
+		} else {
+			module.setGuid(UUID.randomUUID().toString());
 		}
 		modules.add(module);
 		return module;
@@ -313,7 +316,7 @@ public class ChanterApplication {
 		if (m != null) {
 			return m.getrObjects();
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND);
+		return null;
 	}
 
 	@GET
@@ -327,7 +330,7 @@ public class ChanterApplication {
 				}
 			}
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND);
+		return null;
 	}
 
 	@POST
@@ -351,7 +354,7 @@ public class ChanterApplication {
 
 			return r;
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND);
+		return null;
 	}
 
 	@POST
@@ -367,7 +370,7 @@ public class ChanterApplication {
 			}
 			return bl;
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND);
+		return null;
 	}
 
 	@PUT
@@ -394,7 +397,7 @@ public class ChanterApplication {
 			persistBaseline(collection, m.getCurrentBaseline());
 			return newR;
 		}
-		throw new WebApplicationException(Response.Status.NOT_FOUND);
+		return null;
 	}
 
 	@GET
@@ -405,11 +408,12 @@ public class ChanterApplication {
 	}
 
 	@POST
-	@Path("{name}/attributes/{attName}")
-	public void saveAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName,
-			@PathParam("attType") String attType, @PathParam("attDefault") String attDefaultValue) {
+	@Path("{name}/attributes")
+	public void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
+			@FormParam("attType") String attType, @FormParam("attDefaultValue") String attDefaultValue) {
 		Module m = getModuleByName(moduleName);
 		if (m != null) {
+			logger.info("Adding attribute {}", attName);
 			Attribute.AttributeType attrType = Attribute.AttributeType.valueOf(attType);
 			m.addAttribute(attName, attrType, attDefaultValue);
 			persistModuleProperties(m);

@@ -29,6 +29,9 @@ public class RObject {
 
 	// JPA requires a default constructor.
 	public RObject() {
+		this.version = 1;
+		this.created = new Date();
+		this.updated = new Date();
 		this.attributes = new HashMap<>();
 	}
 
@@ -36,11 +39,8 @@ public class RObject {
 	 * Simple constructor with only text supplied
 	 */
 	public RObject(String name) {
-		this.version = 1;
-		this.created = new Date();
-		this.updated = new Date();
+		this();
 		this.name = name;
-		this.attributes = new HashMap<>();
 	}
 
 	public String getGuid() {

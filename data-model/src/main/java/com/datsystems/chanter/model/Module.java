@@ -27,6 +27,11 @@ public class Module {
 	private Map<String, Attribute> attributes;
 	private Baseline currentBaseline;
 
+	private Module() {
+		baselines = new ArrayList<>();
+		attributes = new HashMap<>();
+		rObjects = new ArrayList<>();
+	}
 	/**
 	 * Default constructor.
 	 * 
@@ -117,6 +122,10 @@ public class Module {
 	 */
 	public void addAttribute(String name, Attribute.AttributeType type, String defaultValue) {
 		attributes.put(name, new Attribute(name, type, defaultValue));
+		// Go through all requirements and add the attribute, with the default value
+		for (RObject r: rObjects) {
+			r.getAttributes().put(name, defaultValue);
+		}
 	}
 
 	/**
@@ -136,7 +145,7 @@ public class Module {
 			if (r.getAttributes() != null && r.getAttributes().containsKey(key)) {
 				r.setAttribute(key, r.getAttributes().get(key));
 			} else {
-				r.setAttribute(key, "");
+				r.setAttribute(key, getAttributes().get(key).getDefaultValue());
 			}
 		}
 		rObjects.add(r);
