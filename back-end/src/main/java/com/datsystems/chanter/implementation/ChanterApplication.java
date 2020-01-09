@@ -1,4 +1,4 @@
-package com.datsystems.chanter.logic;
+package com.datsystems.chanter.implementation;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -8,20 +8,25 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import org.apache.logging.log4j.util.Strings;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datsystems.chanter.logic.parsers.ChanterParser;
-import com.datsystems.chanter.logic.parsers.ChanterParserException;
-import com.datsystems.chanter.logic.parsers.HtmlParser;
-import com.datsystems.chanter.logic.parsers.PdfParser;
+import com.datsystems.chanter.api.IChanterServer;
 import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
+import com.datsystems.chanter.parsers.ChanterParser;
+import com.datsystems.chanter.parsers.ChanterParserException;
+import com.datsystems.chanter.parsers.HtmlParser;
+import com.datsystems.chanter.parsers.PdfParser;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -41,9 +46,9 @@ import com.mongodb.client.MongoDatabase;
 public class ChanterApplication implements IChanterServer {
 	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
-	MongoClient mongoClient;
+	private MongoClient mongoClient  = null;
 	// We have a single database for Chanter
-	MongoDatabase db;
+	MongoDatabase db = null;
 
 	// The data is held in memory for now.
 	// Each module is a separate collection
@@ -60,7 +65,8 @@ public class ChanterApplication implements IChanterServer {
 				if (alternateDatabaseName != null && !alternateDatabaseName.isEmpty()) {
 					dbName = alternateDatabaseName;
 				}
-				setMongoDatabase(mongoURI, dbName);
+				setMongoUri(mongoURI);
+				setDatabaseName(dbName);
 			} else {
 				logger.error("Mongo URI not provided.  Data will not be persisted");
 			}
@@ -75,13 +81,25 @@ public class ChanterApplication implements IChanterServer {
 	 * @param mongoURI
 	 * @param dbName
 	 */
-	public void setMongoDatabase(String mongoURI, String dbName) {
+	public void setMongoUri(String mongoURI) {
+		logger.info("Setting Mongo URI to {}", mongoURI);
 		mongoClient = MongoClients.create(mongoURI);
-		db = mongoClient.getDatabase(dbName);
-		// Load the MongoDB modules
-		loadModules();
+		
+		if (db != null) {
+			// Load the MongoDB modules
+			loadModules();
+		}
 	}
 
+	public void setDatabaseName(String dbName) {
+		logger.info("Setting database name to {}", dbName);
+		db = mongoClient.getDatabase(dbName);
+		
+		if (mongoClient != null) {
+			// Load the MongoDB modules
+			loadModules();
+		}
+	}
 	public List<Module> getModules() {
 		return modules;
 	}
@@ -262,7 +280,12 @@ public class ChanterApplication implements IChanterServer {
 	private void persistBaseline(MongoCollection<Document> collection, Baseline bl) {
 		if (collection != null) {
 			Document blDoc = new Document().append("type", "Baseline").append("name", bl.getName());
-			blDoc.append("ids", Strings.join(bl.getReqIds(), ','));
+			StringBuilder builder = new StringBuilder();
+			for (String id: bl.getReqIds()) {
+				builder.append(id).append(",");
+			}
+			
+			blDoc.append("ids", builder.toString());
 			if (bl.getGuid() != null) {
 				collection.replaceOne(new Document("_id", new ObjectId(bl.getGuid())), blDoc);
 			} else {

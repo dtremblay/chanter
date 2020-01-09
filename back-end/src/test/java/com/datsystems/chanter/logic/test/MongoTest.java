@@ -13,8 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.datsystems.chanter.logic.ChanterApplication;
-import com.datsystems.chanter.logic.ChanterException;
+import com.datsystems.chanter.implementation.ChanterApplication;
+import com.datsystems.chanter.implementation.ChanterException;
 import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
@@ -33,7 +33,8 @@ public class MongoTest {
 	@Before
 	public void setup() {
 		app = new ChanterApplication();
-		app.setMongoDatabase("mongodb://localhost:27017", "chanter");
+		app.setMongoUri("mongodb://localhost:27017");
+		app.setDatabaseName("chanter");
 	}
 
 	@After
@@ -58,7 +59,8 @@ public class MongoTest {
 
 		// Verify that our module exists - if we don't close before, then the objects
 		// will not be re-read
-		app.setMongoDatabase("mongodb://localhost:27017", "chanter");
+		app.setMongoUri("mongodb://localhost:27017");
+		app.setDatabaseName("chanter");
 		Module rm = app.getModuleByName(MOD_NAME);
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);
@@ -84,7 +86,8 @@ public class MongoTest {
 
 		// Verify that our module exists - if we don't close before, then the objects
 		// will not be re-read
-		app.setMongoDatabase("mongodb://localhost:27017", "chanter");
+		app.setMongoUri("mongodb://localhost:27017");
+		app.setDatabaseName("chanter");
 		Module rm = app.getModuleByName("_test");
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);
@@ -115,7 +118,8 @@ public class MongoTest {
 
 		// Verify that our module exists - if we don't close before, then the objects
 		// will not be re-read
-		app.setMongoDatabase("mongodb://localhost:27017", "chanter");
+		app.setMongoUri("mongodb://localhost:27017");
+		app.setDatabaseName("chanter");
 		Module rm = app.getModuleByName("_test");
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);

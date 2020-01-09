@@ -3,7 +3,6 @@ package com.datsystems.chanter.model;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * RObject have a guid, version, text. RObject are immutable. So we shouldn't be

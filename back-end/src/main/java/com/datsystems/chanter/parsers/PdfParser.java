@@ -1,4 +1,4 @@
-package com.datsystems.chanter.logic.parsers;
+package com.datsystems.chanter.parsers;
 
 public class PdfParser extends ChanterParserImpl {
 
