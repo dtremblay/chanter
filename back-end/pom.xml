@@ -9,7 +9,7 @@
 	</parent>
 	<artifactId>back-end</artifactId>
 	<name>Chanter Back-End</name>
-	<packaging>jar</packaging>
+	<packaging>bundle</packaging>
 
 	<dependencies>
 		<dependency>
@@ -18,19 +18,10 @@
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.meecrowave</groupId>
-			<artifactId>meecrowave-core</artifactId>
-			<version>${mw.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
 		</dependency>
-		<!-- <dependency>
-			<groupId>org.mongodb</groupId>
-			<artifactId>mongo-java-driver</artifactId>
-			<version>3.4.3</version>
-		</dependency> -->
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
@@ -41,6 +32,14 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.26</version>
 		</dependency>
+		<dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>osgi.cmpn</artifactId>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -59,11 +58,18 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 			</plugin>
-			<!-- <plugin> <groupId>org.apache.felix</groupId> <artifactId>maven-bundle-plugin</artifactId> 
-				<extensions>true</extensions> <version>4.1.0</version> <configuration> <instructions> 
-				<Export-Package>com.datsystems.chanter</Export-Package> <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName> 
-				<Bundle-Activator>${project.artifactId}.impl.Activator</Bundle-Activator> 
-				</instructions> </configuration> </plugin> -->
+			<plugin> 
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId> 
+				<extensions>true</extensions>
+				<version>4.1.0</version>
+				<configuration>
+					<instructions> 
+						<Export-Package>com.datsystems.chanter</Export-Package>
+						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName> 
+					</instructions>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 

@@ -8,20 +8,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response;
-
 import org.apache.logging.log4j.util.Strings;
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -51,10 +37,8 @@ import com.mongodb.client.MongoDatabase;
  * @author daniel
  *
  */
-@Path("modules")
-@ApplicationScoped
-@Produces("application/json")
-public class ChanterApplication {
+
+public class ChanterApplication implements IChanterServer {
 	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
 	MongoClient mongoClient;
@@ -98,13 +82,10 @@ public class ChanterApplication {
 		loadModules();
 	}
 
-	@GET
 	public List<Module> getModules() {
 		return modules;
 	}
 
-	@GET
-	@Path("{name}")
 	public Module getModuleByName(@PathParam("name") String name) {
 		for (Module m : modules) {
 			if (m.getName().equals(name)) {
@@ -114,8 +95,6 @@ public class ChanterApplication {
 		return null;
 	}
 
-	@POST
-	@Consumes("application/json")
 	public Module createModule(Module module) throws ChanterException {
 		// Check for duplicate names
 		for (Module m : modules) {
@@ -295,8 +274,6 @@ public class ChanterApplication {
 		}
 	}
 
-	@DELETE
-	@Path("{name}")
 	public Module deleteModule(@PathParam("name") String name) {
 		Module m = getModuleByName(name);
 		if (m != null) {
@@ -309,8 +286,6 @@ public class ChanterApplication {
 		return m;
 	}
 
-	@GET
-	@Path("{name}/requirements")
 	public List<RObject> getRequirementsForModule(@PathParam("name") String name) {
 		Module m = getModuleByName(name);
 		if (m != null) {
@@ -319,8 +294,6 @@ public class ChanterApplication {
 		return null;
 	}
 
-	@GET
-	@Path("{name}/requirements/{rid}")
 	public RObject getRequirementByIdForModule(@PathParam("name") String name, @PathParam("rid") String rid) {
 		Module m = getModuleByName(name);
 		if (m != null) {
@@ -333,9 +306,6 @@ public class ChanterApplication {
 		return null;
 	}
 
-	@POST
-	@Consumes("application/json")
-	@Path("{name}")
 	public RObject createRequirementInModule(@PathParam("name") String name, RObject r) {
 		Module m = getModuleByName(name);
 		if (m != null) {
@@ -357,9 +327,6 @@ public class ChanterApplication {
 		return null;
 	}
 
-	@POST
-	@Consumes("application/json")
-	@Path("{name}/baselines")
 	public Baseline createBaseline(@PathParam("name") String modName, String blName, String description) {
 		Module m = getModuleByName(modName);
 		if (m != null) {
@@ -373,9 +340,6 @@ public class ChanterApplication {
 		return null;
 	}
 
-	@PUT
-	@Consumes("application/json")
-	@Path("{name}/requirements")
 	public RObject updateRequirementInModule(@PathParam("name") String name, RObject r) {
 		Module m = getModuleByName(name);
 		if (m != null) {
@@ -407,8 +371,6 @@ public class ChanterApplication {
 		return m.getAttributes();
 	}
 
-	@POST
-	@Path("{name}/attributes")
 	public void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
 			@FormParam("attType") String attType, @FormParam("attDefaultValue") String attDefaultValue) {
 		Module m = getModuleByName(moduleName);
@@ -420,8 +382,6 @@ public class ChanterApplication {
 		}
 	}
 
-	@DELETE
-	@Path("{name}/attributes/{attName}")
 	public void deleteAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName) {
 		Module m = getModuleByName(moduleName);
 		if (m != null) {
@@ -435,15 +395,11 @@ public class ChanterApplication {
 		db = null;
 	}
 
-	@POST
-	@Path("{name}/import/html")
 	public Module importFromHtml(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
 		HtmlParser parser = new HtmlParser();
 		return wireParser(parser, moduleName, filename);
 	}
 
-	@POST
-	@Path("{name}/import/pdf")
 	public Module importFromPdf(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
 		PdfParser parser = new PdfParser();
 		return wireParser(parser, moduleName, filename);

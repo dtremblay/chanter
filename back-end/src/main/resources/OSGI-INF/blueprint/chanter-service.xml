@@ -1,0 +1,4 @@
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+    <service ref="chanterService" interface="com.datsystems.chanter.logic.IChanterServer"/>
+    <bean id="chanterService" class="com.datsystems.chanter.logic.ChanterApplication"/>
+</blueprint>
