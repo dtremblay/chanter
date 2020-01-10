@@ -32,10 +32,20 @@
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.26</version>
 		</dependency>
-		<dependency>
+		<!--dependency>
 			<groupId>javax.ws.rs</groupId>
 			<artifactId>jsr311-api</artifactId>
 			<version>1.1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.servicemix.specs</groupId>
+			<artifactId>org.apache.servicemix.specs.jaxrs-api-2.1</artifactId>
+			<version>2.9.1</version>
+		</dependency-->
+		<dependency>
+			<groupId>javax.ws.rs</groupId>
+			<artifactId>javax.ws.rs-api</artifactId>
+			<version>2.1</version>
 		</dependency>
 		<dependency>
             <groupId>org.osgi</groupId>

@@ -1,0 +1,38 @@
+
+   15  feature:install aries-blueprint
+
+   43  feature:install camel-blueprint
+
+   48  cat > deploy/example.xml <<END
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0">
+
+    <camelContext xmlns="http://camel.apache.org/schema/blueprint">
+        <route>
+            <from uri="timer://test?fixedRate=true&amp;period=2000" />
+            <setBody>
+                <simple>Message at ${date:now:yyyy-MM-dd HH:mm:ss}</simple>
+            </setBody>
+            <to uri="log:test" />
+        </route>
+    </camelContext>
+
+</blueprint>
+END
+
+   60  feature:repo-add camel
+       feature:install camel-blueprint
+   72  feature:repo-add hawtio
+   73  feature:list|grep hawt
+   74  feature:install hawtio
+   83  feature:repo-add activemq
+   85  feature:install activemq-broker
+
+  127  install mvn:com.datsystems.chanter/data-model/0.0.1-SNAPSHOT
+       install mvn:com.datsystems.chanter/back-end/0.0.1-SNAPSHOT
+
+  132  install mvn:org.mongodb/mongodb-driver-sync/3.10.0
+  133  install mvn:org.mongodb/bson/3.10.0
+       install mvn:org.mongodb/mongodb-driver-core/3.10.0
+  139  install mvn:javax.ws.rs/jsr311-api/1.1.1
+       feature:install cxf-jaxrs
+
