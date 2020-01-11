@@ -25,34 +25,31 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>3.10.0</version>
+			<version>3.10.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.7.26</version>
 		</dependency>
-		<!--dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>jsr311-api</artifactId>
-			<version>1.1.1</version>
-		</dependency>
 		<dependency>
 			<groupId>org.apache.servicemix.specs</groupId>
-			<artifactId>org.apache.servicemix.specs.jaxrs-api-2.1</artifactId>
-			<version>2.9.1</version>
-		</dependency-->
-		<dependency>
-			<groupId>javax.ws.rs</groupId>
-			<artifactId>javax.ws.rs-api</artifactId>
-			<version>2.1</version>
+			<artifactId>org.apache.servicemix.specs.jsr339-api-2.0.1</artifactId>
+			<version>2.6.0</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
             <groupId>org.osgi</groupId>
             <artifactId>org.osgi.core</artifactId>
             <version>5.0.0</version>
+            <scope>provided</scope>
         </dependency>
-
+		<dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.compendium</artifactId>
+            <version>4.3.0</version>
+            <scope>provided</scope>
+        </dependency>
 	</dependencies>
 
 	<build>

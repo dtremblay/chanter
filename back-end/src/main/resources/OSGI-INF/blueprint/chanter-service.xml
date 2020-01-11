@@ -16,22 +16,13 @@
             <cm:property name="collection" value="chanter"/>
 		</cm:default-properties>
 	</cm:property-placeholder>
+	
     <service ref="chanterService" interface="com.datsystems.chanter.api.IChanterServer"/>
-
-    <cxf:bus>
-        <cxf:features>
-            <cxf:logging/>
-        </cxf:features>
-    </cxf:bus>
-
-    <jaxrs:server id="restService" address="/chanter">
-        <jaxrs:serviceBeans>
-            <ref component-id="chanterService" />
-        </jaxrs:serviceBeans>
-        <jaxrs:providers>
-            <bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
-        </jaxrs:providers>
-    </jaxrs:server>
+    <service ref="chanterService" interface="javax.servlet.http.HttpServlet">
+        <service-properties>
+            <entry key="alias" value="/myservlet"/>
+        </service-properties>
+    </service>
     
     <bean id="chanterService" class="com.datsystems.chanter.implementation.ChanterApplication">
     	<property name="mongoUri" value="${mongoUri}"/>

@@ -1,0 +1,26 @@
+<features name="chanter-${project.version}" 
+	xmlns="http://karaf.apache.org/xmlns/features/v1.4.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.4.0">
+
+    <feature name="chanter" version="${project.version}" description="Chanter Requirement Management System">
+        <!--feature version="${project.version}">karaf-rest-example-common</feature-->
+        <!--feature dependency="true">http</feature-->
+        <!--requirement>osgi.service;effective:=active;filter:=(objectClass=org.osgi.service.http.HttpService)</requirement-->
+        <feature version="4.0.9" dependency="true">aries-blueprint</feature>
+        <feature version="3.1.9" dependency="true">cxf-jaxrs</feature>
+        <feature version="3.1.9" dependency="true">cxf-jackson</feature>
+        <bundle>mvn:com.datsystems.chanter/data-model/${project.version}</bundle>
+        <bundle>mvn:com.datsystems.chanter/back-end/${project.version}</bundle>
+        <bundle dependency="true">mvn:org.mongodb/mongodb-driver-sync/3.10.1</bundle>
+        <bundle dependency="true">mvn:org.mongodb/bson/3.10.1</bundle>
+        <bundle dependency="true">mvn:org.mongodb/mongodb-driver-core/3.10.1</bundle>
+        <!--bundle>mvn:org.apache.karaf.examples/karaf-rest-example-blueprint/${project.version}</bundle-->
+        
+        <config name="chanter-backend">
+            mongoUri=mongodb://localhost:27017/
+            databaseName=chanter
+        </config>
+    </feature>
+
+</features>
