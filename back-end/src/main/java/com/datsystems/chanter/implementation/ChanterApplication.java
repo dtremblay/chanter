@@ -51,7 +51,7 @@ import com.mongodb.client.MongoDatabase;
 
 @Path("/chanter")
 @Produces("application/json")
-@Component(service=IChanterServer.class, property = { "osgi.jaxrs.resource=true" })
+@Component(service=ChanterApplication.class, property = { "osgi.jaxrs.resource=true" })
 public class ChanterApplication implements IChanterServer {
 	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
