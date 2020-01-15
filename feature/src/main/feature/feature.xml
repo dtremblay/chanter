@@ -3,6 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.4.0">
 
+	<repositories>cxf</repositories>
     <feature name="chanter" version="${project.version}" description="Chanter Requirement Management System">
         <!--feature version="${project.version}">karaf-rest-example-common</feature-->
         <!--feature dependency="true">http</feature-->

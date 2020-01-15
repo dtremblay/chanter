@@ -1,14 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
-    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
-    xmlns:cxf="http://cxf.apache.org/blueprint/core"
-    xsi:schemaLocation="
-	 	http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
-	 	http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://svn.apache.org/repos/asf/aries/trunk/blueprint/blueprint-cm/src/main/resources/org/apache/aries/blueprint/compendium/cm/blueprint-cm-1.1.0.xsd
-        http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
-        http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
-	 ">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.1.0"
+	xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+	xmlns:cxf="http://cxf.apache.org/blueprint/core"
+	xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+	xsi:schemaLocation="
+  http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+  http://www.osgi.org/xmlns/blueprint-ext/v1.1.0 https://svn.apache.org/repos/asf/aries/tags/blueprint-0.3.1/blueprint-core/src/main/resources/org/apache/aries/blueprint/ext/blueprint-ext.xsd  
+  http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/schemas/blueprint/jaxws.xsd
+  http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+  http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+  http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+  http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
+  http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.1.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext-1.1.xsd
+  ">
 
     <cm:property-placeholder persistent-id="chanter-backend" update-strategy="reload" >
 		<cm:default-properties>
@@ -23,4 +29,16 @@
     	<property name="mongoUri" value="${mongoUri}"/>
     	<property name="databaseName" value="${collection}"/>
     </bean>
+    
+    <jaxrs:server address="/chanter" id="chanterRest">
+	    <jaxrs:serviceBeans>
+	        <ref component-id="chanterService" />
+	    </jaxrs:serviceBeans>
+	    <jaxrs:providers>
+	    	<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
+	    </jaxrs:providers>
+	    <jaxrs:features>
+	        <cxf:logging />
+	    </jaxrs:features>
+	</jaxrs:server>
 </blueprint>
