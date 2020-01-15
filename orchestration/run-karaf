@@ -1,2 +1,2 @@
 #!/bin/bash
-docker run -it --name karaf --network chanter -v /home/daniel/.m2:/root/.m2 -p 5005:5005 -p 8181:8181 -w /root karaf:4.2.7
+docker run -it --name karaf --network chanter -e JAVA_DEBUG_PORT=0.0.0.0:5005 -v /home/daniel/.m2:/root/.m2 -p 5005:5005 -p 8181:8181 -w /root karaf:4.2.7

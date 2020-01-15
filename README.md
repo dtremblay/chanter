@@ -39,3 +39,9 @@ the requirements and their interpretation.
 While IBM Rational DOORS is a great tool, it is also very proprietary and all the plugins
 are extremely expensive and difficult to integrate, at least according to the IBM consultants...
  
+### Installing in Karaf
+Add the repo:
+feature:repo-add mvn:com.datsystems.chanter/feature/0.0.1-SNAPSHOT/xml
+
+Install the feature
+feature:install chanter

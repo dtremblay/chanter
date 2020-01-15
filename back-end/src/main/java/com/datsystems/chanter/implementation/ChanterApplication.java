@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -51,13 +52,14 @@ import com.mongodb.client.MongoDatabase;
 
 @Path("/chanter")
 @Produces("application/json")
-@Component(service=ChanterApplication.class, property = { "osgi.jaxrs.resource=true" })
+@Component(configurationPid= {"chanter-backend", Component.NAME}, service=IChanterServer.class, property = { "osgi.jaxrs.resource=true" })
 public class ChanterApplication implements IChanterServer {
 	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
 	private MongoClient mongoClient  = null;
 	// We have a single database for Chanter
 	MongoDatabase db = null;
+	String dbName = "chanter";
 
 	// The data is held in memory for now.
 	// Each module is a separate collection
@@ -70,7 +72,7 @@ public class ChanterApplication implements IChanterServer {
 			String alternateDatabaseName = System.getProperty("dbName");
 
 			if (mongoURI != null && !mongoURI.isEmpty()) {
-				String dbName = "chanter";
+				
 				if (alternateDatabaseName != null && !alternateDatabaseName.isEmpty()) {
 					dbName = alternateDatabaseName;
 				}
@@ -94,7 +96,8 @@ public class ChanterApplication implements IChanterServer {
 		logger.info("Setting Mongo URI to {}", mongoURI);
 		mongoClient = MongoClients.create(mongoURI);
 		
-		if (db != null) {
+		if (dbName != null) {
+			db = mongoClient.getDatabase(dbName);
 			// Load the MongoDB modules
 			loadModules();
 		}
@@ -102,9 +105,10 @@ public class ChanterApplication implements IChanterServer {
 
 	public void setDatabaseName(String dbName) {
 		logger.info("Setting database name to {}", dbName);
-		db = mongoClient.getDatabase(dbName);
 		
-		if (mongoClient != null) {
+		if (mongoClient != null && !this.dbName.equals(dbName)) {
+			this.dbName = dbName;
+			db = mongoClient.getDatabase(dbName);
 			// Load the MongoDB modules
 			loadModules();
 		}
@@ -426,7 +430,7 @@ public class ChanterApplication implements IChanterServer {
 
     @PUT
 	@Consumes("application/json")
-	@Path("{name}/requirements")
+	@Path("{name}/attributes")
 	public void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
 			@FormParam("attType") String attType, @FormParam("attDefaultValue") String attDefaultValue) {
 		Module m = getModuleByName(moduleName);
