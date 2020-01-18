@@ -25,7 +25,7 @@ public class LogicTest {
 	}
 
 	@After
-	public void teardown() {
+	public void teardown() throws ChanterException {
 		app.deleteModule(TEST_MODNAME);
 	}
 

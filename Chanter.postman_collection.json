@@ -10,21 +10,37 @@
 			"request": {
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules",
+					"raw": "http://{{chanter_ip}}/chanter/",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules"
+						"chanter",
+						""
 					]
 				},
 				"description": "Get Mdules"
+			},
+			"response": []
+		},
+		{
+			"name": "Get Module New Test",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{chanter_ip}}/chanter/New Test",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"chanter",
+						"New Test"
+					]
+				}
 			},
 			"response": []
 		},
@@ -36,11 +52,25 @@
 					"script": {
 						"id": "49218484-a1e5-48fe-91d4-dc677d7c558a",
 						"exec": [
-							"var jsonData = JSON.parse(responseBody);",
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
 							"",
-							"postman.setGlobalVariable(\"module_guid\", jsonData.guid);",
-							"postman.setGlobalVariable(\"module_name\", jsonData.name)",
-							"console.log(postman.getGlobalVariable(\"module_guid\"));"
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.guid).to.be.not.null;",
+							"    postman.setGlobalVariable(\"module_id\", jsonData.guid);",
+							"    ",
+							"    pm.expect(jsonData.name).to.be.not.null;",
+							"    postman.setGlobalVariable(\"module_name\", jsonData.name)",
+							"    console.log(postman.getGlobalVariable(\"module_id\"));",
+							"    ",
+							"    pm.expect(jsonData.createdDate).to.be.not.null;",
+							"});",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -56,16 +86,16 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"mod5\",\n  \"description\": \"description 5\"\n}"
+					"raw": "{\n  \"name\": \"New Test\",\n  \"description\": \"Description for New Test\"\n}"
 				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules",
+					"raw": "http://{{chanter_ip}}/chanter",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules"
+						"chanter"
 					]
 				}
 			},
@@ -79,10 +109,23 @@
 					"script": {
 						"id": "35f6f479-e1e6-4bc8-8b5a-84c631be27a4",
 						"exec": [
-							"var jsonData = JSON.parse(responseBody);",
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
 							"",
-							"postman.setGlobalVariable(\"first_req_guid\", jsonData.guid);",
-							"console.log(postman.getGlobalVariable(\"first_req_guid\"));"
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.guid).to.be.not.null;",
+							"    postman.setGlobalVariable(\"first_req_id\", jsonData.guid);",
+							"    ",
+							"    pm.expect(jsonData.created).to.be.not.null;",
+							"    pm.expect(jsonData.updated).to.be.not.null;",
+							"    pm.expect(jsonData.version).to.be.equal(1);",
+							"});",
+							"    "
 						],
 						"type": "text/javascript"
 					}
@@ -98,17 +141,17 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"text\": \"This is my first requirement {{module_guid}}\",\n  \"name\": \"Requirement Name\"\n}"
+					"raw": "{\n  \"text\": \"This is my first requirement {{module_id}}\",\n  \"name\": \"Requirement Name\"\n}"
 				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules/{{module_name}}",
+					"raw": "http://{{chanter_ip}}/chanter/New Test",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules",
-						"{{module_name}}"
+						"chanter",
+						"New Test"
 					]
 				},
 				"description": "Create Requirement"
@@ -117,22 +160,33 @@
 		},
 		{
 			"name": "Add attribute to module",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5b9897df-5f7b-46e7-8057-fffbba8c5e83",
+						"exec": [
+							"pm.test(\"Status code is 204\", function () { ",
+							"    pm.response.to.have.status(204);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
-				"method": "POST",
+				"method": "PUT",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules/{{module_name}}/attributes?attName=attribute1&attType=STRING&attDefaultValue=default_value",
+					"raw": "http://{{chanter_ip}}/chanter/New Test/attributes?attName=attribute1&attType=STRING&attDefaultValue=default_value",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules",
-						"{{module_name}}",
+						"chanter",
+						"New Test",
 						"attributes"
 					],
 					"query": [
@@ -155,6 +209,30 @@
 		},
 		{
 			"name": "GET Attributes",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "71893557-0a46-47ac-bc93-2abf7d9a2c94",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.attribute1).to.exist;",
+							"    pm.expect(jsonData.attribute1.name).to.be.equal(\"attribute1\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "GET",
 				"header": [
@@ -163,19 +241,15 @@
 						"value": "application/json"
 					}
 				],
-				"body": {
-					"mode": "raw",
-					"raw": ""
-				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules/{{module_name}}/attributes",
+					"raw": "http://{{chanter_ip}}/chanter/New Test/attributes",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules",
-						"{{module_name}}",
+						"chanter",
+						"New Test",
 						"attributes"
 					]
 				}
@@ -184,6 +258,37 @@
 		},
 		{
 			"name": "Add second requirement",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "bbe586d3-6bc5-4bde-974e-f647d3d255b6",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.guid).to.be.not.null;",
+							"    postman.setGlobalVariable(\"second_req_id\", jsonData.guid);",
+							"    ",
+							"    pm.expect(jsonData.created).to.be.not.null;",
+							"    pm.expect(jsonData.updated).to.be.not.null;",
+							"    pm.expect(jsonData.version).to.be.equal(1);",
+							"    ",
+							"    pm.expect(jsonData.attributes).to.exist;",
+							"    pm.expect(jsonData.attributes.attribute1).to.exist;",
+							"});",
+							"    "
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -194,17 +299,17 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"text\": \"This is my second requirement in {{module_guid}}\",\n  \"name\": \"Second Requirement\",\n  \"attributes\" : {\n\t\"attribute1\": \"This is the first use of this parameter\"\n  }\n}"
+					"raw": "{\n  \"text\": \"This is my second requirement in {{module_id}}\",\n  \"name\": \"Second Requirement\",\n  \"attributes\" : {\n\t\"attribute1\": \"This is the first use of this parameter\"\n  }\n}"
 				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules/{{module_name}}?",
+					"raw": "http://{{chanter_ip}}/chanter/New Test?",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules",
-						"{{module_name}}"
+						"chanter",
+						"New Test"
 					],
 					"query": [
 						{
@@ -226,10 +331,27 @@
 					"script": {
 						"id": "d91b2299-951e-4df1-84cb-7d696ed8bf58",
 						"exec": [
-							"// The attribute1 should be set to the default value.",
-							"var jsonData = JSON.parse(responseBody);",
-							"console.log(jsonData.attributes.attribute1);",
-							"tests[\"Check Default Attribute Value\"] = (jsonData.attributes.attribute1 === \"default_value\");"
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.guid).to.be.not.null;",
+							"    postman.setGlobalVariable(\"second_req_guid\", jsonData.guid);",
+							"    ",
+							"    pm.expect(jsonData.created).to.be.not.null;",
+							"    pm.expect(jsonData.updated).to.be.not.null;",
+							"    pm.expect(jsonData.version).to.be.equal(1);",
+							"    ",
+							"    pm.expect(jsonData.attributes).to.exist;",
+							"    pm.expect(jsonData.attributes.attribute1).to.exist;",
+							"    pm.expect(jsonData.attributes.attribute1).to.be.equal(\"default_value\");",
+							"});",
+							"    "
 						],
 						"type": "text/javascript"
 					}
@@ -245,17 +367,17 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"text\": \"This is my third requirement {{module_guid}}\",\n  \"name\": \"Third one\"\n}"
+					"raw": "{\n  \"text\": \"This is my third requirement {{module_id}}\",\n  \"name\": \"Third one\"\n}"
 				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules/{{module_name}}?",
+					"raw": "http://{{chanter_ip}}/chanter/New Test?",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules",
-						"{{module_name}}"
+						"chanter",
+						"New Test"
 					],
 					"query": [
 						{
@@ -277,10 +399,34 @@
 					"script": {
 						"id": "eb4c9969-e910-4a42-8196-522829969a40",
 						"exec": [
-							"var jsonData = JSON.parse(responseBody);",
-							"tests[\"Requirement name was updated\"] = (jsonData.name === \"updated\");",
-							"tests[\"Version was updated\"] = (jsonData.version == 2);",
-							"tests[\"Requirement test was updated\"] = (jsonData.text === \"This is my first requirement {{module_guid}} - updated in Chanter test - version should be 2\")",
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.guid).to.be.not.null;",
+							"    postman.setGlobalVariable(\"second_req_guid\", jsonData.guid);",
+							"    ",
+							"    pm.expect(jsonData.created).to.be.not.null;",
+							"    pm.expect(jsonData.updated).to.be.not.null;",
+							"    ",
+							"    // we also expect the created and updated dates to be different",
+							"    pm.expect(jsonData.created).to.be.not.equal(jsonData.updated);",
+							"    ",
+							"    // Version should be 2",
+							"    pm.expect(jsonData.version).to.be.equal(2);",
+							"    ",
+							"    // name should have been updated",
+							"    pm.expect(jsonData.name).to.be.equal(\"updated\");",
+							"    ",
+							"    pm.expect(jsonData.attributes).to.exist;",
+							"    pm.expect(jsonData.attributes.attribute1).to.exist;",
+							"    pm.expect(jsonData.attributes.attribute1).to.be.equal(\"default_value\");",
+							"});",
 							""
 						],
 						"type": "text/javascript"
@@ -288,7 +434,7 @@
 				}
 			],
 			"request": {
-				"method": "PUT",
+				"method": "PATCH",
 				"header": [
 					{
 						"key": "Content-Type",
@@ -297,17 +443,17 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"guid\":\"{{first_req_guid}}\",\n  \"text\": \"This is my first requirement {{module_guid}} - updated in Chanter test - version should be 2\",\n  \"name\": \"updated\"\n}"
+					"raw": "{\n  \"guid\":\"{{first_req_id}}\",\n  \"text\": \"This is my first requirement {{module_id}} - updated in Chanter test - version should be 2\",\n  \"name\": \"updated\"\n}"
 				},
 				"url": {
-					"raw": "http://{{chanter_ip}}/modules/{{module_name}}/requirements?",
+					"raw": "http://{{chanter_ip}}/chanter/New Test/requirements?",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"modules",
-						"{{module_name}}",
+						"chanter",
+						"New Test",
 						"requirements"
 					],
 					"query": [
@@ -319,6 +465,65 @@
 					]
 				},
 				"description": "Create Requirement"
+			},
+			"response": []
+		},
+		{
+			"name": "Delete module",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "eb4c9969-e910-4a42-8196-522829969a40",
+						"exec": [
+							"pm.test(\"Status code is 200\", function () { ",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is JSON\", function (){",
+							"    pm.response.to.be.json;",
+							"});",
+							"pm.test(\"Document is well formed\", function(){",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    pm.expect(jsonData.guid).to.be.not.null;",
+							"    pm.expect(jsonData.guid).to.be.equal(postman.getGlobalVariable(\"module_id\"));",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/chanter/New Test?",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"chanter",
+						"New Test"
+					],
+					"query": [
+						{
+							"key": "module",
+							"value": "test",
+							"disabled": true
+						}
+					]
+				}
 			},
 			"response": []
 		}
@@ -347,7 +552,7 @@
 	],
 	"variable": [
 		{
-			"id": "466edb0c-c831-4499-b4ad-edc5d285340c",
+			"id": "9bab6a88-4cb4-4fb7-87ad-efb362e60e6b",
 			"key": "HostIp",
 			"value": "192.168.99.100",
 			"type": "string"
