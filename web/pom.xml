@@ -11,22 +11,15 @@
 	<name>Web Resources for Chanter</name>
 	<packaging>bundle</packaging>
 
-	<dependencies>
-		<!-- Use Meecrowave to deploy the resource. This is an attempt at decoupling 
-			the front-end from the back-end. -->
-	</dependencies>
-
 	<properties>
 		<sonar.sources>src/main/resources/www</sonar.sources>
 		<sonar.exclusions>src/main/resources/www/libs/**</sonar.exclusions>
+		<frontend.base>src/main/resources/www</frontend.base>
 	</properties>
 
 	<build>
-		<resources>
-			<resource>
-				<directory>${frontend.base}</directory>
-			</resource>
-		</resources>
+		<!-- <resources> <resource> <directory>${frontend.base}</directory> </resource> 
+			</resources> -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -35,14 +28,17 @@
 				<extensions>true</extensions>
 				<configuration>
 					<instructions>
-						<Export-Package>com.datsystems.chanter.model</Export-Package>
+						<Export-Package />
 						<Private-Package></Private-Package>
 						<Bundle-Activator></Bundle-Activator>
 						<Bundle-SymbolicName>${pom.artifactId}</Bundle-SymbolicName>
+						<Import-Package>*</Import-Package>
+						<DynamicImport-Package>*</DynamicImport-Package>
 					</instructions>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
+	<description>Web Resources for Chanter</description>
 </project>
