@@ -31,6 +31,7 @@ public class Module {
 		baselines = new ArrayList<>();
 		attributes = new HashMap<>();
 		rObjects = new ArrayList<>();
+		createdDate = new Date();
 	}
 	/**
 	 * Default constructor.

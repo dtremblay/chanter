@@ -8,11 +8,11 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -21,7 +21,10 @@ import javax.ws.rs.Produces;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,9 +53,11 @@ import com.mongodb.client.MongoDatabase;
  *
  */
 
-@Path("/")
+@Path("/chanter")
 @Produces("application/json")
-//@Component(configurationPid= {"chanter-backend", Component.NAME}, service=IChanterServer.class, property = { "osgi.jaxrs.resource=true" })
+@Component(configurationPid= "chanter-backend", 
+	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate=true,
+	property = { "osgi.jaxrs.resource=true", "mongoUri=mongoUri", "databaseName=databaseName" })
 public class ChanterApplication implements IChanterServer {
 	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
@@ -86,6 +91,20 @@ public class ChanterApplication implements IChanterServer {
 		}
 	}
 
+	@Activate
+	@Modified
+    void activate(Map<String, Object> properties) {
+		logger.info("Activation Properties Called");
+		String mongoUri = (String) properties.get("mongoUri");
+		if (mongoUri != null && mongoUri.length() > 0 ) {
+			setMongoUri(mongoUri);
+		}
+		String dbName = (String) properties.get("databaseName");
+		if (dbName != null && dbName.length()>0) {
+			setDatabaseName(dbName);
+		}
+	}
+	
 	/**
 	 * Force a connection to the Mongo database
 	 * 
@@ -139,6 +158,7 @@ public class ChanterApplication implements IChanterServer {
 				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
 			}
 		}
+		
 		if (db != null) {
 			logger.info("Creating Mongo Collection {}", module.getName());
 			db.createCollection(module.getName());
@@ -318,7 +338,7 @@ public class ChanterApplication implements IChanterServer {
 
     @DELETE
 	@Path("{name}")
-	public Module deleteModule(@PathParam("name") String name) {
+	public Module deleteModule(@PathParam("name") String name) throws ChanterException {
 		Module m = getModuleByName(name);
 		if (m != null) {
 			if (db != null) {
@@ -326,7 +346,10 @@ public class ChanterApplication implements IChanterServer {
 				col.drop();
 			}
 			modules.remove(m);
+		} else {
+			throw new ChanterException("Module name '" + name + "' not found. Delete Module operation will not proceed.");
 		}
+		
 		return m;
 	}
 
@@ -394,31 +417,42 @@ public class ChanterApplication implements IChanterServer {
 		return null;
 	}
 
-    @PUT
+    @PATCH
 	@Consumes("application/json")
 	@Path("{name}/requirements")
-	public RObject updateRequirementInModule(@PathParam("name") String name, RObject r) {
+	public RObject updateRequirementInModule(@PathParam("name") String name, RObject r) throws ChanterException {
 		Module m = getModuleByName(name);
 		if (m != null) {
 			RObject oldR = getRequirementByIdForModule(name, r.getGuid());
-			// Create a new requirement from the old one
-			RObject newR = oldR.uprev();
-			oldR.setDeleted(true);
-			oldR.setUpdated(new Date());
-			m.getCurrentBaseline().getReqIds().remove(oldR.getGuid());
-			// Copy all attributes for the new object into the new instance
-
-			m.getrObjects().add(newR);
-			persistModuleRequirement(m, newR);
-			m.getCurrentBaseline().getReqIds().add(newR.getGuid());
-			MongoCollection<Document> collection = null;
-			if (db != null) {
-				collection = db.getCollection(m.getName());
+			// Ensure the old requirement exist and is the current version
+			if (oldR != null && !oldR.getDeleted()) {
+				// Create a new requirement from the old one
+				RObject newR = oldR.uprev();
+				oldR.setDeleted(true);
+				oldR.setUpdated(new Date());
+				m.getCurrentBaseline().getReqIds().remove(oldR.getGuid());
+				// Copy all attributes for the new object into the new instance
+				if (r.getName() != null) {
+					newR.setName(r.getName());
+				}
+				if (r.getText() != null) {
+					newR.setText(r.getText());
+				}
+				m.getrObjects().add(newR);
+				persistModuleRequirement(m, newR);
+				m.getCurrentBaseline().getReqIds().add(newR.getGuid());
+				MongoCollection<Document> collection = null;
+				if (db != null) {
+					collection = db.getCollection(m.getName());
+				}
+				persistBaseline(collection, m.getCurrentBaseline());
+				return newR;
+			} else {
+				throw new ChanterException("Requirement with id '" + r.getGuid() + "' not found. Update Requirement operation will not proceed.");
 			}
-			persistBaseline(collection, m.getCurrentBaseline());
-			return newR;
+		} else {
+			throw new ChanterException("Module name '" + name + "' not found. Delete Module operation will not proceed.");
 		}
-		return null;
 	}
 
 	@GET

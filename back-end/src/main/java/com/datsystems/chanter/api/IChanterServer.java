@@ -16,6 +16,7 @@ import com.datsystems.chanter.implementation.ChanterException;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
+import com.datsystems.chanter.parsers.ChanterParserException;
 
 public interface IChanterServer {
 
@@ -26,7 +27,7 @@ public interface IChanterServer {
 
 	Module createModule(Module module) throws ChanterException;
 
-	Module deleteModule(@PathParam("name") String name);
+	Module deleteModule(@PathParam("name") String name) throws ChanterException;
 
 	List<RObject> getRequirementsForModule(@PathParam("name") String name);
 
@@ -36,7 +37,7 @@ public interface IChanterServer {
 
 	Baseline createBaseline(@PathParam("name") String modName, String blName, String description);
 	
-	RObject updateRequirementInModule(@PathParam("name") String name, RObject r);
+	RObject updateRequirementInModule(@PathParam("name") String name, RObject r) throws ChanterException;
 
 	void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
 			@FormParam("attType") String attType, @FormParam("attDefaultValue") String attDefaultValue);
