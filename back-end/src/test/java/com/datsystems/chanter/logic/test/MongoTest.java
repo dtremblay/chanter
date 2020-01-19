@@ -29,11 +29,12 @@ public class MongoTest {
 
 	public static ChanterApplication app;
 	public static final String MOD_NAME = "_test";
+	static final String CONNECTION = "mongodb://localhost:27017";
 
 	@Before
 	public void setup() {
 		app = new ChanterApplication();
-		app.setMongoUri("mongodb://localhost:27017");
+		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
 	}
 
@@ -44,8 +45,7 @@ public class MongoTest {
 
 	@Test
 	public void testMongoModulesWithAttributes() throws ChanterException {
-		// Ensure the module is clean
-		app.deleteModule(MOD_NAME);
+		
 		Module m = new Module(MOD_NAME, "_description");
 		Module mu = app.createModule(m);
 
@@ -59,18 +59,19 @@ public class MongoTest {
 
 		// Verify that our module exists - if we don't close before, then the objects
 		// will not be re-read
-		app.setMongoUri("mongodb://localhost:27017");
+		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
 		Module rm = app.getModuleByName(MOD_NAME);
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);
 		assertTrue(attributes.containsKey("_att"));
+
+		// Clean up after yourself
+		app.deleteModule(MOD_NAME);
 	}
 
 	@Test
 	public void testMongoRequirementPersistence() throws ChanterException {
-		// Ensure the module is clean
-		app.deleteModule(MOD_NAME);
 		Module m = new Module(MOD_NAME, "_description");
 		Module mu = app.createModule(m);
 
@@ -86,7 +87,7 @@ public class MongoTest {
 
 		// Verify that our module exists - if we don't close before, then the objects
 		// will not be re-read
-		app.setMongoUri("mongodb://localhost:27017");
+		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
 		Module rm = app.getModuleByName("_test");
 		Map<String, Attribute> attributes = rm.getAttributes();
@@ -95,12 +96,13 @@ public class MongoTest {
 
 		List<RObject> reqs = app.getRequirementsForModule(mu.getName());
 		assertEquals(10, reqs.size());
+
+		// Clean up after yourself
+		app.deleteModule(MOD_NAME);
 	}
 
 	@Test
 	public void testMongoBaslines() throws ChanterException {
-		// Ensure the module is clean
-		app.deleteModule(MOD_NAME);
 		Module m = new Module(MOD_NAME, "_description");
 		Module mu = app.createModule(m);
 
@@ -118,7 +120,7 @@ public class MongoTest {
 
 		// Verify that our module exists - if we don't close before, then the objects
 		// will not be re-read
-		app.setMongoUri("mongodb://localhost:27017");
+		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
 		Module rm = app.getModuleByName("_test");
 		Map<String, Attribute> attributes = rm.getAttributes();
@@ -131,6 +133,9 @@ public class MongoTest {
 		assertEquals(2, rm.getBaselines().size());
 		assertEquals(10, rm.getBaselineByName("_newbaseline").getReqIds().size());
 		assertEquals(15, rm.getBaselineByName("current").getReqIds().size());
+
+		// Clean up after yourself
+		app.deleteModule(MOD_NAME);
 	}
 
 	private void createFakeRequirements(int count, String moduleName, Map<String, Attribute> attributes) {

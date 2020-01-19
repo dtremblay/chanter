@@ -14,6 +14,7 @@
 		<module>data-model</module>
 		<module>back-end</module>
 		<module>web</module>
+		<!--module>svelte</module-->
 		<module>feature</module>
 	</modules>
 
