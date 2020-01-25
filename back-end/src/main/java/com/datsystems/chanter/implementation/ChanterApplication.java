@@ -20,6 +20,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -33,6 +34,8 @@ import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
+import com.datsystems.chanter.model.summary.BaselineSummary;
+import com.datsystems.chanter.model.summary.ModuleSummary;
 import com.datsystems.chanter.parsers.ChanterParser;
 import com.datsystems.chanter.parsers.ChanterParserException;
 import com.datsystems.chanter.parsers.HtmlParser;
@@ -65,6 +68,9 @@ public class ChanterApplication implements IChanterServer {
 	// We have a single database for Chanter
 	MongoDatabase db = null;
 	String dbName = "chanter";
+	
+	private final String CREATED_ON = "created-on";
+	private final String UPDATED_ON = "updated-on";
 
 	// The data is held in memory for now.
 	// Each module is a separate collection
@@ -134,13 +140,32 @@ public class ChanterApplication implements IChanterServer {
 	}
 	
 	@GET
-	public List<Module> getModules() {
-		return modules;
+	public List<ModuleSummary> getModules() {
+		List<ModuleSummary> summaries = new ArrayList<>();
+		modules.forEach(m -> {
+			ModuleSummary summary = new ModuleSummary();
+			summary.setId(m.getGuid());
+			summary.setName(m.getName());
+			summaries.add(summary);
+			summary.setAttributes(m.getAttributes());
+			
+			List<BaselineSummary> baselines = new ArrayList<>();
+			m.getBaselines().forEach(b -> {
+				BaselineSummary baseline = new BaselineSummary();
+				baseline.setId(b.getGuid());
+				baseline.setName(b.getName());
+				baseline.setReqCount(b.getReqIds().size());
+				
+				baselines.add(baseline);
+			});
+			summary.setBaselines(baselines);
+		});
+		return summaries;
 	}
 
 	@GET
-	@Path("{name}")
-	public Module getModuleByName(@PathParam("name") String name) {
+	@Path("{moduleName}")
+	public Module getModuleByName(@PathParam("moduleName") String name) {
 		for (Module m : modules) {
 			if (m.getName().equals(name)) {
 				return m;
@@ -219,12 +244,13 @@ public class ChanterApplication implements IChanterServer {
 			// Find all requirements stored in the database
 			coll.find(new Document("type", "Requirement")).forEach((Consumer<Document>) reqDoc -> {
 				RObject r = new RObject();
-				r.setCreated(reqDoc.getDate("created"));
-				r.setUpdated(reqDoc.getDate("updated"));
+				r.setCreated(reqDoc.getDate(CREATED_ON));
+				r.setUpdated(reqDoc.getDate(UPDATED_ON));
 				r.setLastModifiedBy(reqDoc.getString("last-modified-by"));
 				r.setGuid(reqDoc.get("_id").toString());
 				r.setName(reqDoc.getString("name"));
 				r.setVersion(reqDoc.getInteger("version", 1));
+				r.setDeleted(reqDoc.getBoolean("deleted"));
 				r.setText(reqDoc.getString("description"));
 				for (Entry<String, Attribute> entry : modClosure.module.getAttributes().entrySet()) {
 					String value = reqDoc.getString(entry.getKey());
@@ -259,7 +285,8 @@ public class ChanterApplication implements IChanterServer {
 
 	// Convert a Module object to Document
 	private Document convertModuleToDocument(Module m) {
-		Document props = new Document("type", "Properties").append("description", m.getDescription());
+		Document props = new Document("type", "Properties")
+				.append("description", m.getDescription());
 		if (m.getGuid() != null) {
 			props.append("_id", new ObjectId(m.getGuid()));
 		}
@@ -267,7 +294,9 @@ public class ChanterApplication implements IChanterServer {
 		Document attrDoc = new Document();
 		for (Entry<String, Attribute> entry : m.getAttributes().entrySet()) {
 			Attribute attr = entry.getValue();
-			Document subDoc = new Document().append("name", entry.getKey()).append("type", attr.getType().toString())
+			Document subDoc = new Document()
+					.append("name", entry.getKey())
+					.append("type", attr.getType().toString())
 					.append("default", attr.getDefaultValue());
 			attrDoc.append(entry.getKey(), subDoc);
 		}
@@ -301,14 +330,32 @@ public class ChanterApplication implements IChanterServer {
 		if (db != null) {
 			MongoCollection<Document> collection = db.getCollection(m.getName());
 			if (collection != null) {
-				Document requirement = new Document("type", "Requirement").append("name", r.getName())
-						.append("create-on", r.getCreated()).append("version", r.getVersion());
+				Document requirement = new Document("type", "Requirement")
+						.append("name", r.getName())
+						.append(CREATED_ON, r.getCreated())
+						.append("version", r.getVersion())
+						.append("deleted", r.getDeleted())
+						.append("description", r.getText());
+				
+				if (r.getUpdated() != null) {
+					requirement.append(UPDATED_ON, r.getUpdated());
+				}
 				for (Entry<String, Attribute> entry : m.getAttributes().entrySet()) {
 					String attValue = r.getAttributes().get(entry.getKey());
 					requirement.append(entry.getKey(),
 							attValue != null ? attValue : entry.getValue().getDefaultValue());
 				}
+				// Update the old requirement
+				if (r.getVersion() > 1) {
+					Document filter = new Document("_id", new ObjectId(r.getGuid()));
+					Document  doc = new Document("deleted", true)
+							.append(UPDATED_ON, r.getUpdated());
+					Document setDoc = new Document("$set", doc);
+					
+					collection.updateOne(filter, setDoc);
+				}
 				collection.insertOne(requirement);
+				
 				r.setGuid(requirement.get("_id").toString());
 			}
 		} else {
@@ -337,8 +384,8 @@ public class ChanterApplication implements IChanterServer {
 	}
 
     @DELETE
-	@Path("{name}")
-	public Module deleteModule(@PathParam("name") String name) throws ChanterException {
+	@Path("{moduleName}")
+	public Module deleteModule(@PathParam("moduleName") String name) throws ChanterException {
 		Module m = getModuleByName(name);
 		if (m != null) {
 			if (db != null) {
@@ -354,18 +401,28 @@ public class ChanterApplication implements IChanterServer {
 	}
 
     @GET
-	@Path("{name}/requirements")
-	public List<RObject> getRequirementsForModule(@PathParam("name") String name) {
-		Module m = getModuleByName(name);
+	@Path("{moduleName}/baselines/{baselineName}")
+    public List<RObject> getRequirementsForBaseline(
+			@PathParam("moduleName") String moduleName, 
+			@PathParam("baselineName") String baselineName) {
+		Module m = getModuleByName(moduleName);
 		if (m != null) {
-			return m.getrObjects();
+			Baseline b = m.getBaselineByName(baselineName);
+			List<RObject> objects = new ArrayList<>();
+			b.getReqIds().forEach(rid -> {
+				RObject object = m.getRObjectById(rid);
+				objects.add(object);
+			});
+			return objects;
 		}
 		return null;
 	}
 
     @GET
 	@Path("{name}/requirements/{rid}")
-	public RObject getRequirementByIdForModule(@PathParam("name") String name, @PathParam("rid") String rid) {
+	public RObject getRequirementByIdForModule(
+			@PathParam("name") String name, 
+			@PathParam("rid") String rid) {
 		Module m = getModuleByName(name);
 		if (m != null) {
 			for (RObject r : m.getrObjects()) {
@@ -428,6 +485,7 @@ public class ChanterApplication implements IChanterServer {
 			if (oldR != null && !oldR.getDeleted()) {
 				// Create a new requirement from the old one
 				RObject newR = oldR.uprev();
+				newR.setGuid(oldR.getGuid());
 				oldR.setDeleted(true);
 				oldR.setUpdated(new Date());
 				m.getCurrentBaseline().getReqIds().remove(oldR.getGuid());

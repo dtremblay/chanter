@@ -25,6 +25,7 @@ public class RObject {
 	private String name;
 	private String modifiedBy;
 	private Map<String, String> attributes;
+	private Map<Integer, String> links;
 
 	// JPA requires a default constructor.
 	public RObject() {
@@ -32,6 +33,7 @@ public class RObject {
 		this.created = new Date();
 		this.updated = new Date();
 		this.attributes = new HashMap<>();
+		this.links = new HashMap<>();
 	}
 
 	/**
@@ -94,18 +96,6 @@ public class RObject {
 		return text;
 	}
 
-	public Map<String, String> getAttributes() {
-		return attributes;
-	}
-
-	public void setAttributes(Map<String, String> map) {
-		attributes = map;
-	}
-
-	public void setAttribute(String key, String value) {
-		attributes.put(key, value);
-	}
-
 	public String getName() {
 		return name;
 	}
@@ -117,6 +107,32 @@ public class RObject {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
+	public Map<String, String> getAttributes() {
+		return attributes;
+	}
+
+	public void setAttributes(Map<String, String> map) {
+		attributes = map;
+	}
+
+	public void setAttribute(String key, String value) {
+		attributes.put(key, value);
+	}
+	
+	public Map<Integer, String> getLinks() {
+		return links;
+	}
+
+	public void setLinks(Map<Integer, String> map) {
+		links = map;
+	}
+
+	public void setLink(Integer key, String value) {
+		links.put(key, value);
+	}
+
+	
 
 	/**
 	 * Update an existing requirement
@@ -136,6 +152,9 @@ public class RObject {
 		} else {
 			r.attributes = new HashMap<>();
 		}
+		if (this.getLinks() != null) {
+			r.setLinks(this.getLinks());
+		} 
 		r.type = this.getType();
 		return r;
 	}

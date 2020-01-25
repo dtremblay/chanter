@@ -16,7 +16,7 @@
 	// Setting forms
 	import Preferences from './UI/Preferences.svelte';
 	import CreateModule from './UI/CreateModule.svelte';
-	import PasswordSettings from './UI/NotImplemented.svelte';
+	import PasswordSettings from './UI/Password.svelte';
 
 	let currentRoute = "statistics";
 	let currentComponent = Statistics;
@@ -29,12 +29,18 @@
 		{id:1, name:'test 1', description:'description 1', expanded:false, 
 			baselines: [
 				{id:11,name:"current",reqCount:10}
+			],
+			attributes: [
+
 			]
 		},
 		{id:2, name:'test 2', description:'description 2', expanded:false,
 			baselines: [
 				{id:21,name:"PDR",reqCount:20},
 				{id:22,name:"CDR",reqCount:25}
+			],
+			attributes: [
+				
 			]
 		}
     ];
@@ -51,6 +57,18 @@
 	function selectMenu(event) {
 		currentRoute = event.detail.name;
 		locateRoute(currentRoute);
+	}
+	function selectModule(event) {
+		currentRoute = event.detail.name;
+		var mod = modules.find(m => m.id == event.detail.name);
+		if (mod) {
+			mod.expanded = !mod.expanded;
+			console.log(mod);
+		}
+		locateRoute(currentRoute);
+	}
+	function selectBaseline(event) {
+
 	}
 
 	function locateRoute(route) {
@@ -74,14 +92,15 @@
 				currentComponent = Help;
 				break;
 			case "newmodule":
-				currentModule = {name:"New Module", description: "Desciption of new module."}
+				currentModule = {id:'new',name:"New Module", description: "Desciption of new module."}
 				currentComponent = CreateModule;
 				break;
 			default:
 				//load the module in current module
-				currentModule = modules.find(m => m.id === route);
-				currentModule.expanded = !currentModule.expanded;
-				console.log(currentModule);
+				currentModule = modules.find(m => m.id == route);
+				if (currentModule === undefined) {
+					//currentBaseline = 
+				}
 				currentComponent = CreateModule;
 		}
 	}
@@ -130,12 +149,12 @@
 		<ul class="menu-list">
 			<Menu name="statistics" on:selectMenu={selectMenu} selected={currentRoute==='statistics'}>Statistics</Menu>
 			{#each modules as module}
-				<Menu name="{module.id}" on:selectMenu={selectMenu} expandable=true
-					selected={currentRoute===module.id}>{module.name}
-					{#if module.expanded}
+				<Menu name="{module.id}" on:selectMenu={selectModule} expandable=true
+					selected={currentRoute===module.id} expanded={module.expanded}>{module.name}
+					{#if module.expanded == true}
 					<ul>
 						{#each module.baselines as baseline}
-							<li><Menu name="{baseline.id}" selected={currentRoute===baseline.id} {baseline}>{baseline.name}</Menu></li>
+							<li><Menu name="{baseline.id}" selected={currentRoute===baseline.id} on:selectMenu={selectBaseline} {baseline}>{baseline.name}</Menu></li>
 						{/each}
 					</ul>
 					{/if}
@@ -162,6 +181,6 @@
 </div>
 
 <div class="footer level">
-	<div class="level-left">Timesheet Reporting System, Version {version}</div>
-	<div class="level-right">Copyright 2003-2020 © DaT Systems</div>
+	<div class="level-left">Chanter Requirements System, Version {version}</div>
+	<div class="level-right">Copyright 2020 © DaT Systems</div>
 </div>

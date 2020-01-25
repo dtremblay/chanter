@@ -6,8 +6,8 @@
     export let expanded = false;
     const dispatch = createEventDispatcher();
     function handleRoute() {
+        console.log("clicked menu: ", name);
         expanded = !expanded;
-        console.log("Menu is expanded: ", expanded);
         dispatch('selectMenu', {name:name});
     }
 </script>
@@ -16,7 +16,7 @@
         display:block;
     }
 </style>
-<li on:click={handleRoute}>
+<li on:click|stopPropagation={handleRoute}>
     <a href="#{name}" class:is-active={selected}>
     {#if expandable}
         {#if expanded}

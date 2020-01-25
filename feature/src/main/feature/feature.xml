@@ -3,8 +3,10 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
 	xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.4.0">
 
-	<repository>mvn:org.apache.aries.jax.rs/org.apache.aries.jax.rs.features/1.0.6/xml</repository>
-	
+    <repository>mvn:org.apache.cxf.karaf/apache-cxf/3.3.4/xml/features</repository>
+    <repository>mvn:org.apache.aries.jax.rs/org.apache.aries.jax.rs.features/1.0.6/xml</repository>
+
+    
     <feature name="chanter" version="${project.version}" description="Chanter Requirement Management System">
         <!--feature version="${project.version}">karaf-rest-example-common</feature-->
         <feature dependency="true">http-whiteboard</feature>

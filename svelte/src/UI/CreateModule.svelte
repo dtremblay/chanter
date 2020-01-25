@@ -1,5 +1,6 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+    import marked from 'marked';
 
     const dispatch = createEventDispatcher();
     
@@ -30,7 +31,7 @@
 
 </script>
 <div class="is-child box">
-    <h1 class="title hero is-info is-light">{#if id !== undefined}Edit{:else}New{/if} Module</h1>
+    <h1 class="title hero is-info is-light">{#if id !== 'new'}Edit{:else}New{/if} Module</h1>
     <div class="container">
         <div class="field">
             <label class="label">ID</label>
@@ -56,6 +57,7 @@
             <label class="label">Description</label>
             <div class="control has-icons-right">
                 <textarea class="textarea is-success content" rows="3" bind:value={description}></textarea>
+                {@html marked(description)}
                 <span class="icon is-small is-right">
                   <i class="fas fa-check"></i>
                 </span>
@@ -66,7 +68,7 @@
         <div>
             <button class="button is-primary" on:click|preventDefault={saveModule}>Submit</button>
             <button class="button"  on:click|preventDefault={cancelModule}>Cancel</button>
-            {#if id !== undefined}<button class="button is-danger"><span class="icon is-small">
+            {#if id !== 'new'}<button class="button is-danger"><span class="icon is-small">
                 <i class="fas fa-bold fa-trash-alt"></i>
                 </span>
                 <span>Delete</span></button>{/if}
@@ -75,9 +77,9 @@
     </div>
 </div>
 
-{#if id !== undefined}
+{#if id !== 'new'}
     <div class="is-child box">
-        <h2 class="title">Baselines</h2>
+        <h2 class="title"><span>Baselines</span>&nbsp;<button class="button is-info">New Baseline</button></h2>
         <table class="table">
             <thead class="thead">
                 <th class="th">Name</th>
@@ -102,13 +104,15 @@
             <thead class="thead">
                 <th class="th">Attribute Name</th>
                 <th class="th">Attribute Type</th>
+                <th class="th">Default Value</th>
                 <th class="th">Actions</th>
             </thead>
             <tbody class="tbody">
-            {#each baselines as baseline}
+            {#each attributes as attribute}
                 <tr class="tr">
-                    <td class="td">{baseline.name}</td>
-                    <td class="td">{baseline.reqCount}</td>
+                    <td class="td">{attribute.name}</td>
+                    <td class="td">{attribute.type}</td>
+                    <td class="td">{attribute.default}</td>
                     <td class="td">
                         <span class="icon fas fa-edit" title="Edit"></span>
                         <span class="icon fas fa-trash-alt" title="Delete"></span>

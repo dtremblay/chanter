@@ -177,7 +177,7 @@ public class Module {
 		return currentBaseline;
 	}
 	public Baseline getBaselineByName(String value) {
-		for (Baseline bl : baselines) {
+		for (Baseline bl: baselines) {
 			if (bl.getName().equals(value)) {
 				return bl;
 			}

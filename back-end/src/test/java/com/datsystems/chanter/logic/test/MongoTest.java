@@ -94,7 +94,7 @@ public class MongoTest {
 		assertNotNull(attributes);
 		assertTrue(attributes.containsKey("_att"));
 
-		List<RObject> reqs = app.getRequirementsForModule(mu.getName());
+		List<RObject> reqs = app.getRequirementsForBaseline(mu.getName(), "current");
 		assertEquals(10, reqs.size());
 
 		// Clean up after yourself
@@ -127,7 +127,7 @@ public class MongoTest {
 		assertNotNull(attributes);
 		assertTrue(attributes.containsKey("_att"));
 
-		List<RObject> reqs = app.getRequirementsForModule(mu.getName());
+		List<RObject> reqs = app.getRequirementsForBaseline(mu.getName(), "current");
 		assertEquals(15, reqs.size());
 		
 		assertEquals(2, rm.getBaselines().size());

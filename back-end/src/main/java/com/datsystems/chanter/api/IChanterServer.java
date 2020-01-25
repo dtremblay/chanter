@@ -16,22 +16,25 @@ import com.datsystems.chanter.implementation.ChanterException;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
+import com.datsystems.chanter.model.summary.ModuleSummary;
 import com.datsystems.chanter.parsers.ChanterParserException;
 
 public interface IChanterServer {
 
-    
-    List<Module> getModules();
+    // Return the summary for all modules
+    List<ModuleSummary> getModules();
 
     Module getModuleByName(@PathParam("name") String name);
+
+	List<RObject> getRequirementsForBaseline(
+			@PathParam("moduleName") String moduleName, 
+			@PathParam("baselineName") String baselineName);
+
+	RObject getRequirementByIdForModule(@PathParam("name") String name, @PathParam("rid") String rid);
 
 	Module createModule(Module module) throws ChanterException;
 
 	Module deleteModule(@PathParam("name") String name) throws ChanterException;
-
-	List<RObject> getRequirementsForModule(@PathParam("name") String name);
-
-	RObject getRequirementByIdForModule(@PathParam("name") String name, @PathParam("rid") String rid);
 
 	RObject createRequirementInModule(@PathParam("name") String name, RObject r);
 

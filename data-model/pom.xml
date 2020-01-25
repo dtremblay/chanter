@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.datsystems.chanter</groupId>
 		<artifactId>chanter</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>0.0.2-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 
@@ -37,7 +37,9 @@
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Import-Package>*</Import-Package>
 						<Private-Package />
-						<Export-Package>com.datsystems.chanter.model</Export-Package>
+						<Export-Package>
+						    com.datsystems.chanter.model,
+							com.datsystems.chanter.model.summary</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>
