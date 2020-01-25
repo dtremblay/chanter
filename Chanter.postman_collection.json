@@ -45,6 +45,27 @@
 			"response": []
 		},
 		{
+			"name": "Get Requirements for current baseline",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://{{chanter_ip}}/chanter/New Test/baselines/current",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"chanter",
+						"New Test",
+						"baselines",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Create Module",
 			"event": [
 				{
@@ -552,10 +573,11 @@
 	],
 	"variable": [
 		{
-			"id": "9bab6a88-4cb4-4fb7-87ad-efb362e60e6b",
+			"id": "d7e213df-5360-4d65-921e-106245edaec1",
 			"key": "HostIp",
 			"value": "192.168.99.100",
 			"type": "string"
 		}
-	]
+	],
+	"protocolProfileBehavior": {}
 }
