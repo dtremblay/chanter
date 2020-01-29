@@ -11,6 +11,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Response;
 
 import com.datsystems.chanter.implementation.ChanterException;
 import com.datsystems.chanter.model.Baseline;
@@ -22,9 +23,10 @@ import com.datsystems.chanter.parsers.ChanterParserException;
 public interface IChanterServer {
 
     // Return the summary for all modules
-    List<ModuleSummary> getModules();
+    //List<ModuleSummary> getModules();
+	Response getModules();
 
-    Module getModuleByName(@PathParam("name") String name);
+	Response getModuleByName(@PathParam("name") String name);
 
 	List<RObject> getRequirementsForBaseline(
 			@PathParam("moduleName") String moduleName, 

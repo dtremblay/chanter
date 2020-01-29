@@ -7,7 +7,7 @@
     const dispatch = createEventDispatcher();
     function handleRoute() {
         console.log("clicked menu: ", name);
-        expanded = !expanded;
+        expanded = true;
         dispatch('selectMenu', {name:name});
     }
 </script>

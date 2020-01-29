@@ -61,7 +61,7 @@ public class MongoTest {
 		// will not be re-read
 		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
-		Module rm = app.getModuleByName(MOD_NAME);
+		Module rm = app.findModuleByName(MOD_NAME);
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);
 		assertTrue(attributes.containsKey("_att"));
@@ -89,7 +89,7 @@ public class MongoTest {
 		// will not be re-read
 		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
-		Module rm = app.getModuleByName("_test");
+		Module rm = app.findModuleByName("_test");
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);
 		assertTrue(attributes.containsKey("_att"));
@@ -122,7 +122,7 @@ public class MongoTest {
 		// will not be re-read
 		app.setMongoUri(CONNECTION);
 		app.setDatabaseName("chanter");
-		Module rm = app.getModuleByName("_test");
+		Module rm = app.findModuleByName("_test");
 		Map<String, Attribute> attributes = rm.getAttributes();
 		assertNotNull(attributes);
 		assertTrue(attributes.containsKey("_att"));

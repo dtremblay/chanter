@@ -6,18 +6,18 @@ import java.util.Map;
 import com.datsystems.chanter.model.Attribute;
 
 public class ModuleSummary {
-	private String id;
+	private String guid;
 	private String name;
 	private String description;
 	
 	private List<BaselineSummary> baselines;
 	private Map<String, Attribute> attributes;
 	
-	public String getId() {
-		return id;
+	public String getGuid() {
+		return guid;
 	}
-	public void setId(String id) {
-		this.id = id;
+	public void setGuid(String guid) {
+		this.guid = guid;
 	}
 	public String getName() {
 		return name;

@@ -12,12 +12,16 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Response;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -140,11 +144,11 @@ public class ChanterApplication implements IChanterServer {
 	}
 	
 	@GET
-	public List<ModuleSummary> getModules() {
+	public Response getModules() {
 		List<ModuleSummary> summaries = new ArrayList<>();
 		modules.forEach(m -> {
 			ModuleSummary summary = new ModuleSummary();
-			summary.setId(m.getGuid());
+			summary.setGuid(m.getGuid());
 			summary.setName(m.getName());
 			summaries.add(summary);
 			summary.setAttributes(m.getAttributes());
@@ -152,7 +156,7 @@ public class ChanterApplication implements IChanterServer {
 			List<BaselineSummary> baselines = new ArrayList<>();
 			m.getBaselines().forEach(b -> {
 				BaselineSummary baseline = new BaselineSummary();
-				baseline.setId(b.getGuid());
+				baseline.setGuid(b.getGuid());
 				baseline.setName(b.getName());
 				baseline.setReqCount(b.getReqIds().size());
 				
@@ -160,12 +164,16 @@ public class ChanterApplication implements IChanterServer {
 			});
 			summary.setBaselines(baselines);
 		});
-		return summaries;
+		
+		return Response.ok().header("Access-Control-Allow-Origin", "*").entity(summaries).build();
 	}
 
 	@GET
 	@Path("{moduleName}")
-	public Module getModuleByName(@PathParam("moduleName") String name) {
+	public Response getModuleByName(@PathParam("moduleName") String name) {
+		return Response.ok().header("Access-Control-Allow-Origin", "*").entity(findModuleByName(name)).build();
+	}
+	public Module findModuleByName(String name) {
 		for (Module m : modules) {
 			if (m.getName().equals(name)) {
 				return m;
@@ -386,7 +394,7 @@ public class ChanterApplication implements IChanterServer {
     @DELETE
 	@Path("{moduleName}")
 	public Module deleteModule(@PathParam("moduleName") String name) throws ChanterException {
-		Module m = getModuleByName(name);
+		Module m = findModuleByName(name);
 		if (m != null) {
 			if (db != null) {
 				MongoCollection<Document> col = db.getCollection(m.getName());
@@ -405,7 +413,7 @@ public class ChanterApplication implements IChanterServer {
     public List<RObject> getRequirementsForBaseline(
 			@PathParam("moduleName") String moduleName, 
 			@PathParam("baselineName") String baselineName) {
-		Module m = getModuleByName(moduleName);
+		Module m = findModuleByName(moduleName);
 		if (m != null) {
 			Baseline b = m.getBaselineByName(baselineName);
 			List<RObject> objects = new ArrayList<>();
@@ -423,7 +431,7 @@ public class ChanterApplication implements IChanterServer {
 	public RObject getRequirementByIdForModule(
 			@PathParam("name") String name, 
 			@PathParam("rid") String rid) {
-		Module m = getModuleByName(name);
+		Module m = findModuleByName(name);
 		if (m != null) {
 			for (RObject r : m.getrObjects()) {
 				if (r.getGuid().equals(rid) && !r.getDeleted()) {
@@ -438,7 +446,7 @@ public class ChanterApplication implements IChanterServer {
 	@Consumes("application/json")
 	@Path("{name}")
 	public RObject createRequirementInModule(@PathParam("name") String name, RObject r) {
-		Module m = getModuleByName(name);
+		Module m = findModuleByName(name);
 		if (m != null) {
 			logger.info("Adding Requirement {} to module {}", r.getName(), m.getName());
 			m.addRequirement(r);
@@ -462,7 +470,7 @@ public class ChanterApplication implements IChanterServer {
 	@Consumes("application/json")
 	@Path("{name}/baselines")
 	public Baseline createBaseline(@PathParam("name") String modName, String blName, String description) {
-		Module m = getModuleByName(modName);
+		Module m = findModuleByName(modName);
 		if (m != null) {
 			Baseline bl = m.createBaseline(blName, description);
 			if (db != null) {
@@ -478,7 +486,7 @@ public class ChanterApplication implements IChanterServer {
 	@Consumes("application/json")
 	@Path("{name}/requirements")
 	public RObject updateRequirementInModule(@PathParam("name") String name, RObject r) throws ChanterException {
-		Module m = getModuleByName(name);
+		Module m = findModuleByName(name);
 		if (m != null) {
 			RObject oldR = getRequirementByIdForModule(name, r.getGuid());
 			// Ensure the old requirement exist and is the current version
@@ -516,7 +524,7 @@ public class ChanterApplication implements IChanterServer {
 	@GET
 	@Path("{name}/attributes")
 	public Map<String, Attribute> getAttributes(@PathParam("name") String name) {
-		Module m = getModuleByName(name);
+		Module m = findModuleByName(name);
 		return m.getAttributes();
 	}
 
@@ -525,7 +533,7 @@ public class ChanterApplication implements IChanterServer {
 	@Path("{name}/attributes")
 	public void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
 			@FormParam("attType") String attType, @FormParam("attDefaultValue") String attDefaultValue) {
-		Module m = getModuleByName(moduleName);
+		Module m = findModuleByName(moduleName);
 		if (m != null) {
 			logger.info("Adding attribute {}", attName);
 			Attribute.AttributeType attrType = Attribute.AttributeType.valueOf(attType);
@@ -537,7 +545,7 @@ public class ChanterApplication implements IChanterServer {
     @DELETE
 	@Path("{name}/attributes/{attName}")
 	public void deleteAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName) {
-		Module m = getModuleByName(moduleName);
+		Module m = findModuleByName(moduleName);
 		if (m != null) {
 			m.deleteAttribute(attName);
 			persistModuleProperties(m);

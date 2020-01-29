@@ -4,7 +4,7 @@
   const dispatch = createEventDispatcher();
 
   export let moduleCount;
-  export let baselineCount = 4;
+  export let baselineCount;
   let dropdownActive = false;
 
   function toggleDropdown() {
