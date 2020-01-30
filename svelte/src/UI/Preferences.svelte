@@ -9,7 +9,7 @@
 <div class="is-child box">
     <h1 class="title hero is-info is-light">Preferences</h1>
     <div class="container">
-        <div class="field">
-        </div>
+        <button class="button is-primary">Backup Database</button>
+        <button class="button">Restore Database</button>
     </div>
 </div>

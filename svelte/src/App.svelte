@@ -11,6 +11,7 @@
 	import Statistics from './UI/Statistics.svelte';
 	import Reports from './UI/Reports.svelte';
 	import Help from './UI/Help.svelte';
+	import ImportFile from './UI/ImportFile.svelte';
 	import NotImplemented from './UI/NotImplemented.svelte';
 
 	// Setting forms
@@ -23,6 +24,7 @@
 	let currentModuleName;
 	let currentModule;
 	let currentComponent = Statistics;
+	let importModal = false;
 
 	export let version; // this should be coming from the package.json
 	export let path; // if the user presses refresh, allow the application to return to the correct page
@@ -127,7 +129,7 @@
 					currentComponent = Requirements;
 				} else {
 					currentComponent = EditModule;
-					currentComponent.loadModule();
+					//currentComponent.loadModule();
 				}
 		}
 	}
@@ -160,6 +162,10 @@
 		currentRoute = 'statistics';
 		locateRoute('statistics');
 		currentModuleName = '';
+	}
+	function showImportDialog(event) {
+		console.log("import:", event.detail);
+		importModal = true;
 	}
 </script>
 
@@ -213,11 +219,12 @@
 	</aside>
 	{#if modules}
 		<main class="tile is-parent is-vertical is-10 is-fullwidth">
-			<svelte:component this={currentComponent} on:route={handleRoute} 
+			<svelte:component this={currentComponent} on:route={handleRoute} on:import={showImportDialog}
 				on:saveModule={saveModule}
 				moduleCount={moduleCount} baselineCount={baselineCount} moduleName={currentModuleName} />
 		</main>
 	{/if}
+	<ImportFile bind:isActive={importModal}/>
 </div>
 
 <div class="footer level">

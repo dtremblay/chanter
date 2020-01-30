@@ -14,6 +14,22 @@
     console.log("route to newmodule");
     dispatch('route', 'newmodule')
   }
+  function importPdf() {
+    dispatch('import', 'pdf');
+    dropdownActive = false;
+  }
+  function importXls() {
+    dispatch('import', 'xls');
+    dropdownActive = false;
+  }
+  function importCsv() {
+    dispatch('import', 'csv');
+    dropdownActive = false;
+  }
+  function importWrd() {
+    dispatch('import', 'wrd');
+    dropdownActive = false;
+  }
 </script>
 
 <div class="is-child box">
@@ -55,10 +71,10 @@
           </div>
           <div class="dropdown-menu" id="dropdown-menu" role="menu">
             <div class="dropdown-content">
-              <a class="dropdown-item"><i class="fas fa-lg fa-file-pdf" ></i>&nbsp;<span>Import from PDF</span></a>
-              <a class="dropdown-item"><i class="fas fa-lg fa-file-excel"></i>&nbsp;<span>Import from Excel</span></a>
-              <a class="dropdown-item"><i class="fas fa-lg fa-file-csv"></i>&nbsp;<span>Import from CSV</span></a>
-              <a class="dropdown-item"><i class="fas fa-lg fa-file-word"></i>&nbsp;<span>Import from MS Word</span></a>
+              <a class="dropdown-item" on:click={importPdf}><i class="fas fa-lg fa-file-pdf" ></i>&nbsp;<span>Import from PDF</span></a>
+              <a class="dropdown-item" on:click={importXls}><i class="fas fa-lg fa-file-excel"></i>&nbsp;<span>Import from Excel</span></a>
+              <a class="dropdown-item" on:click={importCsv}><i class="fas fa-lg fa-file-csv"></i>&nbsp;<span>Import from CSV</span></a>
+              <a class="dropdown-item" on:click={importWrd}><i class="fas fa-lg fa-file-word"></i>&nbsp;<span>Import from MS Word</span></a>
             </div>
           </div>
         </div>
