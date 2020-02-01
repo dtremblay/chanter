@@ -20,8 +20,10 @@
         <!--feature version="4.0.9" dependency="true">aries-blueprint</feature>
         <feature version="3.1.9" dependency="true">cxf-jaxrs</feature>
         <feature version="3.1.9" dependency="true">cxf-jackson</feature-->
+        <bundle>mvn:com.datsystems.chanter/api/${project.version}</bundle>
         <bundle>mvn:com.datsystems.chanter/data-model/${project.version}</bundle>
         <bundle>mvn:com.datsystems.chanter/back-end/${project.version}</bundle>
+        
         <bundle dependency="true">mvn:org.mongodb/mongodb-driver-sync/3.10.1</bundle>
         <bundle dependency="true">mvn:org.mongodb/bson/3.10.1</bundle>
         <bundle dependency="true">mvn:org.mongodb/mongodb-driver-core/3.10.1</bundle>

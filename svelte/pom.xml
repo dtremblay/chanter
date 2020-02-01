@@ -7,19 +7,16 @@
 		<artifactId>chanter</artifactId>
 		<version>0.0.3-SNAPSHOT</version>
 	</parent>
-	<artifactId>web</artifactId>
-	<name>Web Resources for Chanter</name>
+	<artifactId>svelte</artifactId>
+	<name>Svelte Resources for Chanter</name>
+	<description>Svelte Resources for Chanter</description>
 	<packaging>bundle</packaging>
 
 	<properties>
-		<sonar.sources>src/main/resources/www</sonar.sources>
-		<sonar.exclusions>src/main/resources/www/libs/**</sonar.exclusions>
-		<frontend.base>src/main/resources/www</frontend.base>
+		<frontend.base>public</frontend.base>
 	</properties>
 
 	<build>
-		<!-- <resources> <resource> <directory>${frontend.base}</directory> </resource> 
-			</resources> -->
 		<plugins>
 			<plugin>
 				<groupId>org.apache.felix</groupId>
@@ -39,6 +36,4 @@
 			</plugin>
 		</plugins>
 	</build>
-
-	<description>Web Resources for Chanter</description>
 </project>

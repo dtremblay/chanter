@@ -1,4 +1,4 @@
-package com.datsystems.chanter.parsers;
+package com.datsystems.chanter.api;
 
 public class ChanterParserException extends Exception {
 

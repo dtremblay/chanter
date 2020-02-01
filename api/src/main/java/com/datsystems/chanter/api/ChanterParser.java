@@ -1,4 +1,4 @@
-package com.datsystems.chanter.parsers;
+package com.datsystems.chanter.api;
 
 import com.datsystems.chanter.model.RObject;
 

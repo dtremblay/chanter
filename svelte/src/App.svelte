@@ -17,7 +17,7 @@
 	// Setting forms
 	import Preferences from './UI/Preferences.svelte';
 	import CreateModule from './UI/CreateModule.svelte';
-	import EditModule from './UI/EditModule.svelte';
+	import EditModule, {reloadModule} from './UI/EditModule.svelte';
 	import PasswordSettings from './UI/Password.svelte';
 
 	let currentRoute = "statistics";
@@ -25,6 +25,7 @@
 	let currentModule;
 	let currentComponent = Statistics;
 	let importModal = false;
+	const BASE_URL = 'http://localhost:8001/chanter';
 
 	export let version; // this should be coming from the package.json
 	export let path; // if the user presses refresh, allow the application to return to the correct page
@@ -35,7 +36,7 @@
 	let baselineCount = 0;
 
 	onMount(async function() {
-        const response = await fetch('http://localhost:8181/chanter');
+        const response = await fetch(BASE_URL);
 		modules = await response.json();
 		moduleCount = modules.length;
 		var bc = 0;
@@ -129,7 +130,7 @@
 					currentComponent = Requirements;
 				} else {
 					currentComponent = EditModule;
-					//currentComponent.loadModule();
+					reloadModule();
 				}
 		}
 	}
@@ -157,7 +158,6 @@
 			var index = modules.indexOf(module);
 			modules.splice(index,1, newMod);
 			modules = [...modules];
-
 		}
 		currentRoute = 'statistics';
 		locateRoute('statistics');

@@ -15,30 +15,9 @@
   http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
   http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.1.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext-1.1.xsd
   ">
+	<bean id="htmlImporter" class="com.datsystems.chanter.parser.HtmlParser">
+		
+	</bean>
+	<service interface=""/>
 
-    <cm:property-placeholder persistent-id="chanter-backend" update-strategy="reload" >
-		<cm:default-properties>
-			<cm:property name="mongoUri" value="mongodb://localhost:27017"/>
-            <cm:property name="collection" value="chanter"/>
-		</cm:default-properties>
-	</cm:property-placeholder>
-	
-    <service ref="chanterService" interface="com.datsystems.chanter.api.IChanterServer"/>
-    
-    <bean id="chanterService" class="com.datsystems.chanter.implementation.ChanterApplication">
-    	<property name="mongoUri" value="${mongoUri}"/>
-    	<property name="databaseName" value="${collection}"/>
-    </bean>
-    
-    <jaxrs:server address="/chanter" id="chanterRest">
-	    <jaxrs:serviceBeans>
-	        <ref component-id="chanterService" />
-	    </jaxrs:serviceBeans>
-	    <jaxrs:providers>
-	    	<bean class="com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider"/>
-	    </jaxrs:providers>
-	    <jaxrs:features>
-	        <cxf:logging />
-	    </jaxrs:features>
-	</jaxrs:server>
 </blueprint>

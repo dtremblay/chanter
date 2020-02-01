@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.datsystems.chanter</groupId>
 	<artifactId>chanter</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
+	<version>0.0.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Chanter RM</name>
 	<description>Chanter Requirements Management System</description>
@@ -12,9 +12,13 @@
 	<modules>
 		<module>banner</module>
 		<module>data-model</module>
+		<module>api</module>
+		<module>importers/csv-importer</module>
+		<module>importers/pdf-importer</module>
+		<module>importers/html-importer</module>
 		<module>back-end</module>
-		<module>web</module>
-		<!--module>svelte</module-->
+		<!-- <module>web</module> -->
+		<module>svelte</module>
 		<module>feature</module>
 	</modules>
 
@@ -35,6 +39,12 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
+				<scope>test</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.datsystems.chanter</groupId>
+				<artifactId>data-model</artifactId>
+				<version>0.0.3-SNAPSHOT</version>
 				<scope>test</scope>
 			</dependency>
 		</dependencies>

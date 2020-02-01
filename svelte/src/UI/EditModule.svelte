@@ -1,14 +1,30 @@
+<script context="module">
+    export function reloadModule() {
+        console.log("ReLoading module: ", moduleName);
+    }
+
+
+</script>
 <script>
     import { createEventDispatcher } from 'svelte';
     import marked from 'marked';
 
     const dispatch = createEventDispatcher();
     
-    // we will store this for the 
     export let moduleName;
-    
     let currentTab = 'Main';
     let showModalAttributes = false;
+
+
+    export async function loadModule() {
+        console.log("Loading module: ", moduleName);
+        if (moduleName !== 'new') {
+            const response = await fetch('http://localhost:8181/chanter/' + moduleName);
+            var currentModule = await response.json();
+            console.log("currentModule:",currentModule);
+            return currentModule;
+        }
+    }
 
     function saveModule() {
         console.log('save module', currentModule);
@@ -21,15 +37,7 @@
     function deleteModule() {
         dispatch('deleteModule',currentModule);
     }
-    async function loadModule() {
-        console.log("Loading module: ", moduleName);
-        if (moduleName !== 'new') {
-            const response = await fetch('http://localhost:8181/chanter/' + moduleName);
-            var currentModule = await response.json();
-            console.log("currentModule:",currentModule);
-            return currentModule;
-        }
-    }
+
     function selectTab(event) {
         currentTab = event.target.innerHTML;
     }

@@ -2,31 +2,17 @@ package com.datsystems.chanter.api;
 
 import java.util.List;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import com.datsystems.chanter.implementation.ChanterException;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
-import com.datsystems.chanter.model.summary.ModuleSummary;
-import com.datsystems.chanter.parsers.ChanterParserException;
 
-public interface IChanterServer {
+public interface ChanterServer {
 
     // Return the summary for all modules
     //List<ModuleSummary> getModules();
 	Response getModules();
 
-	Response getModuleByName(@PathParam("name") String name);
+	Response getModuleByName(String name);
 
 	List<RObject> getRequirementsForBaseline(
 			@PathParam("moduleName") String moduleName, 

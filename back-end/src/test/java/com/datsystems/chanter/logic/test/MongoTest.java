@@ -13,8 +13,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.datsystems.chanter.api.ChanterException;
 import com.datsystems.chanter.implementation.ChanterApplication;
-import com.datsystems.chanter.implementation.ChanterException;
 import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;

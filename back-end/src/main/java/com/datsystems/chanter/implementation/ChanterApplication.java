@@ -12,37 +12,35 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PATCH;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 
 import org.bson.Document;
-import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.datsystems.chanter.api.IChanterServer;
+import com.datsystems.chanter.api.ChanterException;
+import com.datsystems.chanter.api.ChanterParser;
+import com.datsystems.chanter.api.ChanterParserException;
+import com.datsystems.chanter.api.ChanterServer;
 import com.datsystems.chanter.model.Attribute;
 import com.datsystems.chanter.model.Baseline;
 import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
 import com.datsystems.chanter.model.summary.BaselineSummary;
 import com.datsystems.chanter.model.summary.ModuleSummary;
-import com.datsystems.chanter.parsers.ChanterParser;
-import com.datsystems.chanter.parsers.ChanterParserException;
-import com.datsystems.chanter.parsers.HtmlParser;
+import com.datsystems.chanter.parser.HtmlParser;
 import com.datsystems.chanter.parsers.PdfParser;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -65,7 +63,7 @@ import com.mongodb.client.MongoDatabase;
 @Component(configurationPid= "chanter-backend", 
 	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate=true,
 	property = { "osgi.jaxrs.resource=true", "mongoUri=mongoUri", "databaseName=databaseName" })
-public class ChanterApplication implements IChanterServer {
+public class ChanterApplication implements ChanterServer {
 	// New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
 	private MongoClient mongoClient  = null;
@@ -75,6 +73,9 @@ public class ChanterApplication implements IChanterServer {
 	
 	private final String CREATED_ON = "created-on";
 	private final String UPDATED_ON = "updated-on";
+	
+	@Reference()
+	private List<ChanterParser> parsers;
 
 	// The data is held in memory for now.
 	// Each module is a separate collection
@@ -144,7 +145,7 @@ public class ChanterApplication implements IChanterServer {
 	}
 	
 	@GET
-	public Response getModules() {
+	public List<ModuleSummary> getModules() {
 		List<ModuleSummary> summaries = new ArrayList<>();
 		modules.forEach(m -> {
 			ModuleSummary summary = new ModuleSummary();
@@ -165,15 +166,16 @@ public class ChanterApplication implements IChanterServer {
 			summary.setBaselines(baselines);
 		});
 		
-		return Response.ok().header("Access-Control-Allow-Origin", "*").entity(summaries).build();
+		return summaries);
 	}
 
 	@GET
 	@Path("{moduleName}")
-	public Response getModuleByName(@PathParam("moduleName") String name) {
-		return Response.ok().header("Access-Control-Allow-Origin", "*").entity(findModuleByName(name)).build();
+	public Module getModuleByName(@PathParam("moduleName") String name) {
+		return findModuleByName(name));
 	}
-	public Module findModuleByName(String name) {
+	
+	private Module findModuleByName(String name) {
 		for (Module m : modules) {
 			if (m.getName().equals(name)) {
 				return m;
@@ -329,6 +331,7 @@ public class ChanterApplication implements IChanterServer {
 					persistBaseline(collection, bl);
 
 				}
+				// Probably need to persist the requirements too...
 			}
 		}
 	}

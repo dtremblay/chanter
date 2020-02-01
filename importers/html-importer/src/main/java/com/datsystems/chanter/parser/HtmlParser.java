@@ -1,4 +1,9 @@
-package com.datsystems.chanter.parsers;
+package com.datsystems.chanter.parser;
+
+import com.datsystems.chanter.api.ChanterParseEventListener;
+import com.datsystems.chanter.api.ChanterParser;
+import com.datsystems.chanter.api.ChanterParserException;
+
 
 /**
  * Read an HTML file and find requirements.
@@ -6,7 +11,7 @@ package com.datsystems.chanter.parsers;
  * @author daniel
  *
  */
-public class HtmlParser extends ChanterParserImpl {
+public class HtmlParser implements ChanterParser {
 	
 	@Override
 	public void parse(String filename) throws ChanterParserException {
@@ -16,6 +21,18 @@ public class HtmlParser extends ChanterParserImpl {
 		
 		// As you read requirements, call push event
 
+	}
+
+	@Override
+	public void registerListener(ChanterParseEventListener listener) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void pushEvent(String event, RObject r) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
