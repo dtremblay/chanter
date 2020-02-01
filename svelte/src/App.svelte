@@ -25,9 +25,9 @@
 	let currentModule;
 	let currentComponent = Statistics;
 	let importModal = false;
-	const BASE_URL = 'http://localhost:8001/chanter';
 
-	export let version; // this should be coming from the package.json
+	export let version; // this value is passed from main.js
+	export let baseServer; // this value is passed from main.js
 	export let path; // if the user presses refresh, allow the application to return to the correct page
 	let menuShown = true;
 
@@ -36,7 +36,7 @@
 	let baselineCount = 0;
 
 	onMount(async function() {
-        const response = await fetch(BASE_URL);
+        const response = await fetch(baseServer);
 		modules = await response.json();
 		moduleCount = modules.length;
 		var bc = 0;

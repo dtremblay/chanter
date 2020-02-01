@@ -1,4 +1,5 @@
 /node_modules/
 /public/build/
-
+src/main/resources/www/build/
 .DS_Store
+/target/
