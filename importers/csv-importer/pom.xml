@@ -9,7 +9,8 @@
 	</parent>
 	<artifactId>csv-importer</artifactId>
 	<name>CSV Data Importer for Chanter</name>
-	<description>This component is installed as a whiteboard patter in the Chanter Service</description>
+	<description>This component is installed as a whiteboard pattern in the Chanter Service</description>
+	<packaging>bundle</packaging>
 
 	<dependencies>
 		<dependency>
@@ -39,6 +40,7 @@
 					<instructions>
 						<Import-Package>*</Import-Package>
 						<Private-Package>com.datsystems.chanter.parser</Private-Package>
+						<Export-Service>com.datsystems.chanter.api.ChanterParser</Export-Service>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 					</instructions>
 				</configuration>

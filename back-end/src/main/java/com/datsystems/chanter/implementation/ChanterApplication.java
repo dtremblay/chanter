@@ -18,7 +18,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -27,10 +26,12 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.datsystems.chanter.api.ChanterException;
+import com.datsystems.chanter.api.ChanterParseEventListener;
 import com.datsystems.chanter.api.ChanterParser;
 import com.datsystems.chanter.api.ChanterParserException;
 import com.datsystems.chanter.api.ChanterServer;
@@ -40,8 +41,6 @@ import com.datsystems.chanter.model.Module;
 import com.datsystems.chanter.model.RObject;
 import com.datsystems.chanter.model.summary.BaselineSummary;
 import com.datsystems.chanter.model.summary.ModuleSummary;
-import com.datsystems.chanter.parser.HtmlParser;
-import com.datsystems.chanter.parsers.PdfParser;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -74,8 +73,10 @@ public class ChanterApplication implements ChanterServer {
 	private final String CREATED_ON = "created-on";
 	private final String UPDATED_ON = "updated-on";
 	
-	@Reference()
-	private List<ChanterParser> parsers;
+	@Reference(policy = ReferencePolicy.DYNAMIC)
+	volatile private List<ChanterParser> parsers = null;
+	
+	private ChanterParseEventListener parserListener = null;
 
 	// The data is held in memory for now.
 	// Each module is a separate collection
@@ -166,16 +167,12 @@ public class ChanterApplication implements ChanterServer {
 			summary.setBaselines(baselines);
 		});
 		
-		return summaries);
+		return summaries;
 	}
 
 	@GET
 	@Path("{moduleName}")
-	public Module getModuleByName(@PathParam("moduleName") String name) {
-		return findModuleByName(name));
-	}
-	
-	private Module findModuleByName(String name) {
+	public Module findModuleByName(@PathParam("moduleName") String name) {
 		for (Module m : modules) {
 			if (m.getName().equals(name)) {
 				return m;
@@ -396,7 +393,7 @@ public class ChanterApplication implements ChanterServer {
 
     @DELETE
 	@Path("{moduleName}")
-	public Module deleteModule(@PathParam("moduleName") String name) throws ChanterException {
+	public Module deleteModule(String name) throws ChanterException {
 		Module m = findModuleByName(name);
 		if (m != null) {
 			if (db != null) {
@@ -448,7 +445,7 @@ public class ChanterApplication implements ChanterServer {
     @POST
 	@Consumes("application/json")
 	@Path("{name}")
-	public RObject createRequirementInModule(@PathParam("name") String name, RObject r) {
+	public RObject createRequirementInModule(String name, RObject r) {
 		Module m = findModuleByName(name);
 		if (m != null) {
 			logger.info("Adding Requirement {} to module {}", r.getName(), m.getName());
@@ -560,38 +557,47 @@ public class ChanterApplication implements ChanterServer {
 		db = null;
 	}
 
+	/**
+	 * We want this method to return immediately and generate events that the application will listen to.
+	 */
 	@POST
-	@Path("{name}/import/html")
-	public Module importFromHtml(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
-		HtmlParser parser = new HtmlParser();
-		return wireParser(parser, moduleName, filename);
-	}
-
-    @POST
-	@Path("{name}/import/pdf")
-	public Module importFromPdf(@PathParam("name") String moduleName, @PathParam("filename") String filename) {
-		PdfParser parser = new PdfParser();
-		return wireParser(parser, moduleName, filename);
-	}
-	
-	private Module wireParser(ChanterParser parser, String moduleName, String filename) {
-		// parse the document into requirements
-		Module imported = new Module(moduleName, "Imported module from: " + filename);
-		imported.setCreatedDate(new Date());
-		imported.setCreatedBy("current-user");
-
-		try {
-			parser.parse(filename);
-			parser.registerListener((event, r) -> {
-				logger.info("Parsing event: {}", event);
-				if (r != null) {
-					imported.addRequirement(r);
+	@Path("{name}/import/{type}")
+	public ModuleSummary importFile(@PathParam("name") String moduleName, @PathParam("type") String type, byte[] filename) 
+		throws ChanterParserException {
+		if (parsers != null && parsers.size() > 0) {
+			// find the correct parser
+			ChanterParser parser = null;
+			for (ChanterParser p  : parsers) {
+				if (p.getType().equalsIgnoreCase(type)) {
+					parser = p;
+					break;
 				}
-			});
-		} catch (ChanterParserException cpe) {
-			logger.error(cpe.getMessage());
+			}
+			if (parser != null ) {
+				// Check if we're interested in events
+				if (parserListener != null) {
+					// raise events
+					parser.registerListener(parserListener);
+				}
+				parser.parse(filename);
+				ModuleSummary summary = new ModuleSummary();
+				summary.setName(moduleName);
+				summary.setDescription("Import Module from " + type + " file.");
+				return summary;
+				
+			} else {
+				throw new ChanterParserException("No parser found for file type " + type + ".");
+			}
+			
+		} else {
+			throw new ChanterParserException("No parsers are configured.");
 		}
+	}
 
-		return imported;
+	public void addParser(ChanterParser parser) {
+		if (parsers == null) {
+			parsers = new ArrayList<>();
+		}
+		parsers.add(parser);
 	}
 }

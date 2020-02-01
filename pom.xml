@@ -28,6 +28,14 @@
 		<servicemix-spec.version>2.9.0</servicemix-spec.version>
 	</properties>
 
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.26</version>
+		</dependency>
+	</dependencies>
+	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -45,7 +53,6 @@
 				<groupId>com.datsystems.chanter</groupId>
 				<artifactId>data-model</artifactId>
 				<version>0.0.3-SNAPSHOT</version>
-				<scope>test</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

@@ -9,7 +9,8 @@
 	</parent>
 	<artifactId>pdf-importer</artifactId>
 	<name>PDF Data Importer for Chanter</name>
-	<description>This component is installed as a whiteboard patter in the Chanter Service</description>
+	<description>This component is installed as a whiteboard pattern in the Chanter Service</description>
+	<packaging>bundle</packaging>
 
 	<dependencies>
 		<dependency>

@@ -23,6 +23,12 @@
         <bundle>mvn:com.datsystems.chanter/api/${project.version}</bundle>
         <bundle>mvn:com.datsystems.chanter/data-model/${project.version}</bundle>
         <bundle>mvn:com.datsystems.chanter/back-end/${project.version}</bundle>
+        <bundle>mvn:com.datsystems.chanter/svelte/${project.version}</bundle>
+        
+        <!-- importers -->
+        <bundle>mvn:com.datsystems.chanter/csv-importer/${project.version}</bundle>
+        <bundle>mvn:com.datsystems.chanter/pdf-importer/${project.version}</bundle>
+        <bundle>mvn:com.datsystems.chanter/html-importer/${project.version}</bundle>
         
         <bundle dependency="true">mvn:org.mongodb/mongodb-driver-sync/3.10.1</bundle>
         <bundle dependency="true">mvn:org.mongodb/bson/3.10.1</bundle>

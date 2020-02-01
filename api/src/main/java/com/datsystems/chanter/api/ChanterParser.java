@@ -1,6 +1,7 @@
 package com.datsystems.chanter.api;
 
 import com.datsystems.chanter.model.RObject;
+import com.datsystems.chanter.model.summary.ModuleSummary;
 
 /**
  * All file parsers that generate requirements must implement this interface.
@@ -9,11 +10,17 @@ import com.datsystems.chanter.model.RObject;
  */
 public interface ChanterParser {
 	/**
+	 * The parser must return it's type.
+	 * @return
+	 */
+	String getType();
+	
+	/**
 	 * Initiate reading a file of the appropriate type.
 	 * @param filename
 	 * @return
 	 */
-	void parse(String filename) throws ChanterParserException;
+	ModuleSummary parse(byte[] filename) throws ChanterParserException;
 
 	void registerListener(ChanterParseEventListener listener);
 	

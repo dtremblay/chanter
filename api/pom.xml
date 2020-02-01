@@ -7,6 +7,7 @@
   </parent>
   <artifactId>api</artifactId>
   <name>Chanter APIs</name>
+  <packaging>bundle</packaging>
   
   <dependencies>
   	<dependency>
