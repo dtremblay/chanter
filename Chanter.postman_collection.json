@@ -11,14 +11,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "http://{{chanter_ip}}/chanter/",
+					"raw": "http://{{chanter_ip}}/chanter",
 					"protocol": "http",
 					"host": [
 						"{{chanter_ip}}"
 					],
 					"path": [
-						"chanter",
-						""
+						"chanter"
 					]
 				},
 				"description": "Get Mdules"
@@ -107,7 +106,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n  \"name\": \"New Test\",\n  \"description\": \"Description for New Test\"\n}"
+					"raw": "{\n  \"name\": \"New Test 3\",\n  \"description\": \"Description for New Test\"\n}"
 				},
 				"url": {
 					"raw": "http://{{chanter_ip}}/chanter",
@@ -547,6 +546,61 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Import from HTML",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "http://{{chanter_ip}}/chanter/New Test/import/html",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"chanter",
+						"New Test",
+						"import",
+						"html"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Import from PDF",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "*/*",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "file",
+					"file": {
+						"src": "/home/daniel/chanter/importers/pdf-importer/src/test/resources/data/Requirements Document Example.pdf"
+					}
+				},
+				"url": {
+					"raw": "http://{{chanter_ip}}/chanter/New Test/import/pdf",
+					"protocol": "http",
+					"host": [
+						"{{chanter_ip}}"
+					],
+					"path": [
+						"chanter",
+						"New Test",
+						"import",
+						"pdf"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -573,7 +627,7 @@
 	],
 	"variable": [
 		{
-			"id": "d7e213df-5360-4d65-921e-106245edaec1",
+			"id": "28bd0eb1-5241-479a-a7fe-48661e9ef0fd",
 			"key": "HostIp",
 			"value": "192.168.99.100",
 			"type": "string"
