@@ -18,7 +18,7 @@ public class PdfParser implements ChanterParser {
 		return type;
 	}
 	@Override
-	public ModuleSummary parse(byte[] filename) throws ChanterParserException {
+	public ModuleSummary parse(String filename) throws ChanterParserException {
 		logger.info("Starting the import of a PDF file");
 		// open the file with PdfReader
 		

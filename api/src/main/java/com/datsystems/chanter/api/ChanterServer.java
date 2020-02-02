@@ -106,10 +106,12 @@ public interface ChanterServer {
 	 * Import a file of a given type, and create a new module.
 	 * @param fileType
 	 * @param moduleName
-	 * @param filename
+	 * @param data
 	 * @return
+	 * @throws ParserConfigurationException
+	 * @throws ChanterParserException
 	 */
-	ModuleSummary importFile(String fileType, String moduleName, byte[] filename) 
+	ModuleSummary importFile(String fileType, String moduleName, byte[] data) 
 			throws ParserConfigurationException, ChanterParserException;	
 
 }

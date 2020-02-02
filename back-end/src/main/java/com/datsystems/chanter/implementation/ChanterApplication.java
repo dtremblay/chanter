@@ -1,5 +1,9 @@
 package com.datsystems.chanter.implementation;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +22,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import org.bson.Document;
 import org.bson.types.ObjectId;
@@ -58,7 +63,7 @@ import com.mongodb.client.MongoDatabase;
  */
 
 @Path("/chanter")
-@Produces("application/json")
+@Produces(MediaType.APPLICATION_JSON)
 @Component(configurationPid= "chanter-backend", 
 	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate=true,
 	property = { "osgi.jaxrs.resource=true", "mongoUri=mongoUri", "databaseName=databaseName" })
@@ -83,6 +88,12 @@ public class ChanterApplication implements ChanterServer {
 	List<Module> modules = new ArrayList<>();
 
 	public ChanterApplication() {
+		// Check if the temporary output folder exists
+		File temp = new File("/tmp/chanter");
+		if (!temp.isDirectory()) {
+			temp.mkdir();
+		}
+			
 		// Load modules from database
 		try {
 			String mongoURI = System.getProperty("mongo");
@@ -562,8 +573,12 @@ public class ChanterApplication implements ChanterServer {
 	 */
 	@POST
 	@Path("{name}/import/{type}")
-	public ModuleSummary importFile(@PathParam("name") String moduleName, @PathParam("type") String type, byte[] filename) 
+	@Consumes(MediaType.WILDCARD)
+	public ModuleSummary importFile(@PathParam("name") String moduleName, @PathParam("type") String type, byte[] rawdata) 
 		throws ChanterParserException {
+		if (rawdata == null) {
+			throw new ChanterParserException("Data is empty - no import will occur.");
+		}
 		if (parsers != null && parsers.size() > 0) {
 			// find the correct parser
 			ChanterParser parser = null;
@@ -573,16 +588,28 @@ public class ChanterApplication implements ChanterServer {
 					break;
 				}
 			}
-			if (parser != null ) {
+			if (parser != null) {
+				// store binary data to file
+				String randomFileName = "/tmp/chanter/" + UUID.randomUUID().toString() + "." + type;
+				// Write the file
+				try {
+					OutputStream os = new FileOutputStream(new File(randomFileName));
+					os.write(rawdata);
+					os.flush();
+			        os.close();
+				} catch (IOException ioe) {
+					logger.error("Could not write file to container: {}", ioe.getMessage());
+				}
+			        
 				// Check if we're interested in events
 				if (parserListener != null) {
 					// raise events
 					parser.registerListener(parserListener);
 				}
-				parser.parse(filename);
+				parser.parse(randomFileName);
 				ModuleSummary summary = new ModuleSummary();
 				summary.setName(moduleName);
-				summary.setDescription("Import Module from " + type + " file.");
+				summary.setDescription("Import Module from " + type + " file.\nFile is stored in " + randomFileName + ".");
 				return summary;
 				
 			} else {

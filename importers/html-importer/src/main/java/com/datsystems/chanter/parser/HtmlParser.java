@@ -25,7 +25,7 @@ public class HtmlParser implements ChanterParser {
 	}
 	
 	@Override
-	public ModuleSummary parse(byte[] filename) throws ChanterParserException {
+	public ModuleSummary parse(String filename) throws ChanterParserException {
 		logger.info("Starting the import of a HTML file");
 		// open the file with a Document reader
 		

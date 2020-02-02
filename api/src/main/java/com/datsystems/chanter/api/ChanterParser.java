@@ -20,7 +20,7 @@ public interface ChanterParser {
 	 * @param filename
 	 * @return
 	 */
-	ModuleSummary parse(byte[] filename) throws ChanterParserException;
+	ModuleSummary parse(String filename) throws ChanterParserException;
 
 	void registerListener(ChanterParseEventListener listener);
 	

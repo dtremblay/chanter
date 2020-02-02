@@ -3,3 +3,4 @@
 src/main/resources/www/build/
 .DS_Store
 /target/
+.externalToolBuilders/

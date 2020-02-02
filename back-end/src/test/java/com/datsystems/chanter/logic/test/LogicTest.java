@@ -2,10 +2,13 @@ package com.datsystems.chanter.logic.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
-
-import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 
 import org.junit.After;
 import org.junit.Before;
@@ -73,7 +76,6 @@ public class LogicTest {
 	/** This method should raise an exception, because the import is not wired in. **/
 	@Test(expected = ChanterParserException.class)
 	public void testParserNotPresent() throws ChanterParserException {
-		File file = new File("./data/Requirements Document Example.html");
 		byte[] data = null;
 		ChanterApplication ca = new ChanterApplication();
 		ca.importFile(TEST_MODNAME, "html", data);
@@ -82,7 +84,6 @@ public class LogicTest {
 	/** Parsers are registered, but none for the right type **/
 	@Test(expected = ChanterParserException.class)
 	public void testParserNotAvailable() throws ChanterParserException {
-		File file = new File("./data/Requirements Document Example.html");
 		byte[] data = null;
 		HtmlParser htmlParser = new HtmlParser();
 		ChanterApplication ca = new ChanterApplication();
@@ -90,26 +91,37 @@ public class LogicTest {
 		ca.importFile(TEST_MODNAME, "pdf", data);
 	}
 	
-	@Test()
-	public void testImportHtml() throws ChanterParserException {
-		File file = new File("./data/Requirements Document Example.html");
+	/** if the data is null, an exception is thrown. **/
+	@Test(expected = ChanterParserException.class)
+	public void testImportNull() throws ChanterParserException {
 		byte[] data = null;
 		HtmlParser htmlParser = new HtmlParser();
 		app.addParser(htmlParser);
 		ModuleSummary newModule = app.importFile(TEST_MODNAME, "html", data);
+		assertNull(newModule);
+	}
+	
+	@Test()
+	public void testImportHtml() throws ChanterParserException {
+		byte[] data = "<h1>Title</h1>".getBytes();
+		HtmlParser htmlParser = new HtmlParser();
+		app.addParser(htmlParser);
+		ModuleSummary newModule = app.importFile(TEST_MODNAME, "html", data);
 		assertNotNull(newModule);
-		assertEquals("Import Module from html file.", newModule.getDescription());
+		assertNotNull(newModule.getDescription());
 	}
 	
 	@Test
-	public void testImportPdf() throws ChanterParserException {
-		File file = new File("./data/Requirements Document Example.pdf");
-		byte[] data = null;
+	public void testImportPdf() throws IOException, FileNotFoundException, ChanterParserException {
+		File file = new File("./src/test/resources/data/Requirements Document Example.pdf");
+		InputStream os = new FileInputStream(file);
+		byte[] data = os.readAllBytes();
+		os.close();
 		PdfParser htmlParser = new PdfParser();
 		app.addParser(htmlParser);
 		ModuleSummary newModule = app.importFile(TEST_MODNAME, "pdf", data);
 		assertNotNull(newModule);
-		assertEquals("Import Module from pdf file.", newModule.getDescription());
+		assertNotNull(newModule.getDescription());
 		
 		// How do we discover the attributes?  Is this done manually?
 		//assertEquals(5, newModule.getAttributes().size());
@@ -120,13 +132,12 @@ public class LogicTest {
 	
 	@Test
 	public void testImportCsv() throws ChanterParserException {
-		File file = new File("./data/Requirements Document Example.csv");
-		byte[] data = null;
+		byte[] data = "name,description,attribute1\ntest,this is a test,value".getBytes();
 		CsvParser htmlParser = new CsvParser();
 		app.addParser(htmlParser);
 		ModuleSummary newModule = app.importFile(TEST_MODNAME, "csv", data);
 		assertNotNull(newModule);
-		assertEquals("Import Module from csv file.", newModule.getDescription());
+		assertNotNull(newModule.getDescription());
 		
 		// How do we discover the attributes?  Is this done manually?
 		//assertEquals(5, newModule.getAttributes().size());
