@@ -12,6 +12,7 @@
     const dispatch = createEventDispatcher();
     
     export let moduleName;
+    
     let currentTab = 'Main';
     let showModalAttributes = false;
 
@@ -93,7 +94,7 @@
         <div class="field">
             <label class="label">Name</label>
             <div class="control has-icons-right">
-                <input class="input is-success" bind:value={currentModule.name} maxlength="200">
+                <input class="input is-success" value={currentModule.name} maxlength="200">
                 <span class="icon is-small is-right">
                   <i class="fas fa-check"></i>
                 </span>
@@ -103,7 +104,7 @@
         <div class="field">
             <label class="label">Description</label>
             <div class="control has-icons-right">
-                <textarea class="textarea is-success content" rows="3" bind:value={currentModule.description}></textarea>
+                <textarea class="textarea is-success content" rows="3" value={currentModule.description}></textarea>
                 <span class="icon is-small is-right">
                   <i class="fas fa-check"></i>
                 </span>
