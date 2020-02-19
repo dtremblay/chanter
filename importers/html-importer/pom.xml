@@ -6,6 +6,7 @@
 		<groupId>com.datsystems.chanter</groupId>
 		<artifactId>chanter</artifactId>
 		<version>0.0.3-SNAPSHOT</version>
+		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>html-importer</artifactId>
 	<name>HTML Data Importer for Chanter</name>

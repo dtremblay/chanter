@@ -6,6 +6,7 @@
 		<groupId>com.datsystems.chanter</groupId>
 		<artifactId>chanter</artifactId>
 		<version>0.0.3-SNAPSHOT</version>
+		<relativePath>../..</relativePath>
 	</parent>
 	<artifactId>csv-importer</artifactId>
 	<name>CSV Data Importer for Chanter</name>
