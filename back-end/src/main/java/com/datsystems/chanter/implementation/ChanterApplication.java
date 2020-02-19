@@ -163,8 +163,9 @@ public class ChanterApplication implements ChanterServer {
 			ModuleSummary summary = new ModuleSummary();
 			summary.setGuid(m.getGuid());
 			summary.setName(m.getName());
-			summaries.add(summary);
+			summary.setDescription(m.getDescription());
 			summary.setAttributes(m.getAttributes());
+			summaries.add(summary);
 			
 			List<BaselineSummary> baselines = new ArrayList<>();
 			m.getBaselines().forEach(b -> {
