@@ -1,42 +1,25 @@
-<script context="module">
-    export function reloadModule() {
-        console.log("ReLoading module: ", moduleName);
-    }
-
-
-</script>
 <script>
     import { createEventDispatcher } from 'svelte';
     import marked from 'marked';
 
     const dispatch = createEventDispatcher();
     
-    export let moduleName;
+    export let module = undefined;
+    export let loading = true;
     
     let currentTab = 'Main';
     let showModalAttributes = false;
 
-
-    export async function loadModule() {
-        console.log("Loading module: ", moduleName);
-        if (moduleName !== 'new') {
-            const response = await fetch('http://localhost:8181/chanter/' + moduleName);
-            var currentModule = await response.json();
-            console.log("currentModule:",currentModule);
-            return currentModule;
-        }
-    }
-
     function saveModule() {
-        console.log('save module', currentModule);
-        dispatch('saveModule', currentModule);
+        console.log('save module', module);
+        dispatch('saveModule', module);
     }
 
     function cancelModule() {
         dispatch('route','');
     }
     function deleteModule() {
-        dispatch('deleteModule',currentModule);
+        dispatch('deleteModule', module);
     }
 
     function selectTab(event) {
@@ -70,9 +53,7 @@
     }
 </script>
 
-{#await loadModule()}
-    <p>Loading...</p>
-{:then currentModule}
+{#if module.guid }
 <div class="is-child box" >
     <h1 class="title hero is-info is-light">Edit Module</h1>
     <div class="tabs is-boxed">
@@ -87,14 +68,14 @@
         <div class="field">
             <label class="label">ID</label>
             <div class="control">
-                <input class="input" readonly value={currentModule.guid}>
+                <input class="input" readonly value={module.guid}>
             </div>
         </div>
 
         <div class="field">
             <label class="label">Name</label>
             <div class="control has-icons-right">
-                <input class="input is-success" value={currentModule.name} maxlength="200">
+                <input class="input is-success" value={module.name} maxlength="200">
                 <span class="icon is-small is-right">
                   <i class="fas fa-check"></i>
                 </span>
@@ -104,7 +85,7 @@
         <div class="field">
             <label class="label">Description</label>
             <div class="control has-icons-right">
-                <textarea class="textarea is-success content" rows="3" value={currentModule.description}></textarea>
+                <textarea class="textarea is-success content" rows="3" value={module.description}></textarea>
                 <span class="icon is-small is-right">
                   <i class="fas fa-check"></i>
                 </span>
@@ -133,7 +114,7 @@
                 <th class="th">Actions</th>
             </thead>
             <tbody class="tbody">
-            {#each currentModule.baselines as baseline}
+            {#each module.baselines as baseline}
                 <tr class="tr">
                     <td class="td">{baseline.name}</td>
                     <td class="td">{baseline.reqIds.length}</td>
@@ -153,7 +134,7 @@
                 <th class="th">Actions</th>
             </thead>
             <tbody class="tbody">
-            {#each Object.entries(currentModule.attributes) as attribute}
+            {#each Object.entries(module.attributes) as attribute}
                 <tr class="tr">
                     <td class="td">{attribute[1].name}</td>
                     <td class="td">{attribute[1].type}</td>
@@ -206,16 +187,13 @@
                         </div>
                     </section>
                     <footer class="modal-card-foot">
-                    <button class="button is-success" on:click={saveAttribute(currentModule)}>Save</button>
+                    <button class="button is-success" on:click={saveAttribute}>Save</button>
                     <button class="button" on:click={cancelAttribute}>Cancel</button>
                     </footer>
                 </div>
             </div>
         {/if}
-
-
 </div>
-
-{:catch error}
-    <p style="color: red">{error.message}</p>
-{/await}
+{:else}
+    <p>Loading...</p>
+{/if}

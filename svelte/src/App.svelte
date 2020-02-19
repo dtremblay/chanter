@@ -17,7 +17,7 @@
 	// Setting forms
 	import Preferences from './UI/Preferences.svelte';
 	import CreateModule from './UI/CreateModule.svelte';
-	import EditModule, {reloadModule} from './UI/EditModule.svelte';
+	import EditModule from './UI/EditModule.svelte';
 	import PasswordSettings from './UI/Password.svelte';
 
 	let currentRoute = "statistics";
@@ -58,25 +58,29 @@
 	}
 	function selectMenu(event) {
 		currentRoute = event.detail.name;
+		modules.forEach(m => {
+			m.expanded = false;
+		});
 		locateRoute(currentRoute);
 	}
 
-	function findModuleById(name) {
-		return modules.find(m => m.guid == name);
+	async function findModuleById(id) {
+		if (id !== 'new') {
+			console.log("Loading module by id: ", id);
+			var mod = modules.find(m => m.guid === id);
+			if (mod) {
+				console.log("Loading module by name: ", mod.name);
+				const response = await fetch(baseServer + '/' + mod.name);
+				currentModule = await response.json();
+				mod.expanded = true;
+			} else {
+				console.error("Module not found: " + id);
+			}
+		}
 	}
+
 	function selectModule(event) {
-		if (currentModule){
-			currentModule.expanded = false;
-		}
 		currentRoute = event.detail.name;
-		var mod = findModuleById(currentRoute);
-		if (mod) {
-			currentModuleName = mod.name;
-			
-			currentModule = mod;
-			console.log(mod);
-		}
-		
 		locateRoute(currentRoute);
 	}
 	function selectBaseline(event) {
@@ -119,7 +123,10 @@
 				}
 				var mod = findModuleById(route);
 				if (mod) {
-					mod.expanded = true;
+					modules.forEach(m => {
+						m.expanded = (route == m.guid);
+					});
+
 					currentModule = mod;
 					currentModuleName = mod.name;
 				}
@@ -130,7 +137,6 @@
 					currentComponent = Requirements;
 				} else {
 					currentComponent = EditModule;
-					reloadModule();
 				}
 		}
 	}
@@ -145,7 +151,7 @@
 	}
 
 	function saveModule(event) {
-		var newMod = event.detail;
+		let newMod = event.detail;
 		newMod.expanded = false;
 		if (newMod.guid == 'new') {
 			// Add a new module
@@ -162,6 +168,11 @@
 		currentRoute = 'statistics';
 		locateRoute('statistics');
 		currentModuleName = '';
+	}
+	async function deleteModule(event) {
+		let response = await fetch(baseServer + '/' + event.detail.name, {method:'delete', body: {}});
+        let result = await response.json();
+        console.log("deleteModule:", result);
 	}
 	function showImportDialog(event) {
 		console.log("import:", event.detail);
@@ -219,9 +230,10 @@
 	</aside>
 	{#if modules}
 		<main class="tile is-parent is-vertical is-10 is-fullwidth">
-			<svelte:component this={currentComponent} on:route={handleRoute} on:import={showImportDialog}
-				on:saveModule={saveModule}
-				moduleCount={moduleCount} baselineCount={baselineCount} moduleName={currentModuleName} />
+			<svelte:component this={currentComponent} module={currentModule}
+				moduleCount={moduleCount} baselineCount={baselineCount} moduleName={currentModuleName} baseServer={baseServer}
+				on:route={handleRoute} on:import={showImportDialog} on:saveModule={saveModule} on:deleteModule={deleteModule} 
+				 />
 		</main>
 	{/if}
 	<ImportFile bind:isActive={importModal}/>
