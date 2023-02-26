@@ -30,10 +30,10 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/src/main/resources/www/build</outputDirectory>
+							<outputDirectory>${basedir}/src/main/resources/www</outputDirectory>
 							<resources>
 								<resource>
-									<directory>public/build</directory>
+									<directory>dist</directory>
 									<filtering>true</filtering>
 								</resource>
 							</resources>
