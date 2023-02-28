@@ -29,7 +29,7 @@
 		<dependency>
 			<groupId>org.mongodb</groupId>
 			<artifactId>mongodb-driver-sync</artifactId>
-			<version>4.9.0</version>
+			<version>${mongo-driver.version}</version>
 		</dependency>
 		<dependency>
 		    <groupId>org.osgi</groupId>
@@ -64,6 +64,10 @@
 		    <artifactId>pdf-importer</artifactId>
 		    <version>${project.version}</version>
 		    <scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
 		</dependency>
 	</dependencies>
 

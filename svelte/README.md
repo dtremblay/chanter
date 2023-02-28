@@ -1,3 +1,13 @@
+
+# Chanter Svelte Build
+The build was recently updated to use Vite.
+* To build the project use: ```npm run build```
+* To develop the code use: ```npm run dev -- --open```
+
+After creating the build, you will notice the **dist** folder got created.
+* To build the karaf Jar file, use: ```mvn install```
+
+
 # Svelte + Vite
 
 This template should help get you started developing with Svelte in Vite.

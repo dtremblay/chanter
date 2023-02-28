@@ -116,7 +116,7 @@ public class ChanterApplication implements ChanterServer {
 
 	@Activate
 	@Modified
-    void activate(Map<String, Object> properties) {
+  void activate(Map<String, Object> properties) {
 		logger.info("Activation Properties Called");
 		String mongoUri = (String) properties.get("mongoUri");
 		if (mongoUri != null && mongoUri.length() > 0 ) {
@@ -403,7 +403,7 @@ public class ChanterApplication implements ChanterServer {
 		}
 	}
 
-    @DELETE
+  @DELETE
 	@Path("{moduleName}")
 	public Module deleteModule(String name) throws ChanterException {
 		Module m = findModuleByName(name);
@@ -420,7 +420,7 @@ public class ChanterApplication implements ChanterServer {
 		return m;
 	}
 
-    @GET
+  @GET
 	@Path("{moduleName}/baselines/{baselineName}")
     public List<RObject> getRequirementsForBaseline(
 			@PathParam("moduleName") String moduleName, 
@@ -438,7 +438,7 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-    @GET
+  @GET
 	@Path("{name}/requirements/{rid}")
 	public RObject getRequirementByIdForModule(
 			@PathParam("name") String name, 
@@ -454,7 +454,7 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-    @POST
+  @POST
 	@Consumes("application/json")
 	@Path("{name}")
 	public RObject createRequirementInModule(String name, RObject r) {
@@ -478,7 +478,7 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-    @POST
+  @POST
 	@Consumes("application/json")
 	@Path("{name}/baselines")
 	public Baseline createBaseline(@PathParam("name") String modName, String blName, String description) {
@@ -494,7 +494,7 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-    @PATCH
+  @PATCH
 	@Consumes("application/json")
 	@Path("{name}/requirements")
 	public RObject updateRequirementInModule(@PathParam("name") String name, RObject r) throws ChanterException {
@@ -540,7 +540,7 @@ public class ChanterApplication implements ChanterServer {
 		return m.getAttributes();
 	}
 
-    @PUT
+  @PUT
 	@Consumes("application/json")
 	@Path("{name}/attributes")
 	public void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
@@ -554,7 +554,7 @@ public class ChanterApplication implements ChanterServer {
 		}
 	}
 
-    @DELETE
+  @DELETE
 	@Path("{name}/attributes/{attName}")
 	public void deleteAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName) {
 		Module m = findModuleByName(moduleName);

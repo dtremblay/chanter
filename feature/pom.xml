@@ -9,7 +9,8 @@
 	</parent>
 	<artifactId>feature</artifactId>
 	<packaging>pom</packaging>
-
+	<name>Chanter Feature</name>
+	
 	<build>
 		<resources>
 			<resource>
@@ -53,5 +54,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	<name>Chanter Feature</name>
+
 </project>

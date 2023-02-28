@@ -6,7 +6,7 @@ const app = new App({
   target: document.getElementById('app'),
   props: {
 		version: version,
-		baseServer: "http://localhost:8001/chanter",
+		baseServer: "http://localhost:8181/chanter",
 		path: window.location
 	}
 });

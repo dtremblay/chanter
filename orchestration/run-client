@@ -1,2 +1,2 @@
 #!/bin/bash
-docker exec -ti karaf /usr/local/apache-karaf-4.2.7/bin/client
+docker exec -ti karaf /usr/local/apache-karaf-4.2.8/bin/client

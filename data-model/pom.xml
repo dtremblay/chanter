@@ -39,7 +39,7 @@
 						<Private-Package />
 						<Export-Package>
 						    com.datsystems.chanter.model,
-							com.datsystems.chanter.model.summary</Export-Package>
+							  com.datsystems.chanter.model.summary</Export-Package>
 					</instructions>
 				</configuration>
 			</plugin>

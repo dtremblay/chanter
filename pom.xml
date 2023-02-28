@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.datsystems.chanter</groupId>
 	<artifactId>chanter</artifactId>
-	<version>0.0.3-SNAPSHOT</version>
+	<version>0.0.4-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>Chanter RM</name>
 	<description>Chanter Requirements Management System</description>
@@ -17,31 +17,27 @@
 		<module>importers/pdf-importer</module>
 		<module>importers/html-importer</module>
 		<module>back-end</module>
-		<!-- <module>web</module> -->
+		<!-- <module>vuejs</module> -->
 		<module>svelte</module>
 		<module>feature</module>
 	</modules>
 
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>11</java.version>
 		<mw.version>1.2.5</mw.version>
 		<servicemix-spec.version>2.9.0</servicemix-spec.version>
+		<camel.version>3.16.0</camel.version>
+		<mongo-driver.version>4.9.0</mongo-driver.version>
+		<slf4j.version>1.7.36</slf4j.version>
 	</properties>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>2.0.6</version>
-		</dependency>
-	</dependencies>
 	
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
-				<version>2.0.6</version>
+				<version>${slf4j.version}</version>
+				<scope>provided</scope>
 			</dependency>
 			<dependency>
 				<groupId>junit</groupId>
