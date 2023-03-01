@@ -27,7 +27,7 @@
 		<mw.version>1.2.5</mw.version>
 		<servicemix-spec.version>2.9.0</servicemix-spec.version>
 		<camel.version>3.16.0</camel.version>
-		<mongo-driver.version>4.9.0</mongo-driver.version>
+		<mongo-driver.version>3.12.12</mongo-driver.version>
 		<slf4j.version>1.7.36</slf4j.version>
 	</properties>
 	

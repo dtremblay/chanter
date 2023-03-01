@@ -1,0 +1,10 @@
+GET http://localhost:8181/chanter/
+
+###
+POST http://localhost:8181/chanter/
+content-type: application/json
+
+{
+    "name":"test",
+    "description":"my test description"
+}

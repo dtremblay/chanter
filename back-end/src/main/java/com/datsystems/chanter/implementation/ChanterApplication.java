@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 
 import javax.ws.rs.Consumes;
@@ -28,10 +28,7 @@ import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,44 +60,50 @@ import com.mongodb.client.MongoDatabase;
  */
 
 @Path("/chanter")
-@Produces(MediaType.APPLICATION_JSON)
-@Component(configurationPid= "chanter-backend", 
-	configurationPolicy = ConfigurationPolicy.REQUIRE, immediate=true,
-	property = { "osgi.jaxrs.resource=true", "mongoUri=mongoUri", "databaseName=databaseName" })
+@Component(
+    service = ChanterApplication.class, 
+    configurationPid = "chanter-backend", 
+	//configurationPolicy = ConfigurationPolicy.REQUIRE, 
+	immediate = true, 
+    property = { 
+        "osgi.jaxrs.resource=true",
+        "mongoUri=mongoUri", 
+        "databaseName=databaseName"
+    })
 public class ChanterApplication implements ChanterServer {
-	// New logger
+    // New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
-	private MongoClient mongoClient  = null;
+	private MongoClient mongoClient = null;
 	// We have a single database for Chanter
 	MongoDatabase db = null;
 	String dbName = "chanter";
-	
+
 	private final String CREATED_ON = "created-on";
 	private final String UPDATED_ON = "updated-on";
-	
-	@Reference(policy = ReferencePolicy.DYNAMIC)
+
+	//@Reference(policy = ReferencePolicy.DYNAMIC)
 	volatile private List<ChanterParser> parsers = null;
-	
+
 	private ChanterParseEventListener parserListener = null;
 
 	// The data is held in memory for now.
 	// Each module is a separate collection
 	List<Module> modules = new ArrayList<>();
 
-	public ChanterApplication() {
-		// Check if the temporary output folder exists
+    public ChanterApplication() {
+        // Check if the temporary output folder exists
 		File temp = new File("/tmp/chanter");
 		if (!temp.isDirectory()) {
 			temp.mkdir();
 		}
-			
+
 		// Load modules from database
 		try {
 			String mongoURI = System.getProperty("mongo");
 			String alternateDatabaseName = System.getProperty("dbName");
 
 			if (mongoURI != null && !mongoURI.isEmpty()) {
-				
+
 				if (alternateDatabaseName != null && !alternateDatabaseName.isEmpty()) {
 					dbName = alternateDatabaseName;
 				}
@@ -112,22 +115,66 @@ public class ChanterApplication implements ChanterServer {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
+    }
+
+    @GET
+	@Path("{moduleName}")
+	@Produces(MediaType.APPLICATION_JSON)
+    @Override
+	public Module findModuleByName(@PathParam("moduleName") String name) {
+		logger.info("Find module by name {}", name);
+		for (Module m : modules) {
+			if (m.getName().equals(name)) {
+				return m;
+			}
+		}
+		return null;
 	}
 
-	@Activate
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Override
+    public List<ModuleSummary> getModules() {
+        logger.info("Retrieving all modules");
+		List<ModuleSummary> summaries = new ArrayList<>();
+		modules.forEach(m -> {
+			ModuleSummary summary = new ModuleSummary();
+			summary.setGuid(m.getGuid());
+			summary.setName(m.getName());
+			summary.setDescription(m.getDescription());
+			summary.setAttributes(m.getAttributes());
+			summaries.add(summary);
+
+			List<BaselineSummary> baselines = new ArrayList<>();
+			m.getBaselines().forEach(b -> {
+				BaselineSummary baseline = new BaselineSummary();
+				baseline.setGuid(b.getGuid());
+				baseline.setName(b.getName());
+				baseline.setReqCount(b.getReqIds().size());
+
+				baselines.add(baseline);
+			});
+			summary.setBaselines(baselines);
+		});
+
+		return summaries;
+    }
+
+    @Activate
 	@Modified
-  void activate(Map<String, Object> properties) {
-		logger.info("Activation Properties Called");
-		String mongoUri = (String) properties.get("mongoUri");
-		if (mongoUri != null && mongoUri.length() > 0 ) {
+	void activate(Map<String, Object> properties) {
+        String mongoUri = (String) properties.get("mongoUri");
+        String dbName = (String) properties.get("databaseName");
+		logger.info("Activation Properties Called, uri: {}, db: {}", mongoUri, dbName);
+		if (mongoUri != null && mongoUri.length() > 0) {
 			setMongoUri(mongoUri);
 		}
-		String dbName = (String) properties.get("databaseName");
-		if (dbName != null && dbName.length()>0) {
+		if (dbName != null && dbName.length() > 0) {
 			setDatabaseName(dbName);
 		}
 	}
-	
+
 	/**
 	 * Force a connection to the Mongo database
 	 * 
@@ -137,7 +184,7 @@ public class ChanterApplication implements ChanterServer {
 	public void setMongoUri(String mongoURI) {
 		logger.info("Setting Mongo URI to {}", mongoURI);
 		mongoClient = MongoClients.create(mongoURI);
-		
+
 		if (dbName != null) {
 			db = mongoClient.getDatabase(dbName);
 			// Load the MongoDB modules
@@ -147,7 +194,7 @@ public class ChanterApplication implements ChanterServer {
 
 	public void setDatabaseName(String dbName) {
 		logger.info("Setting database name to {}", dbName);
-		
+
 		if (mongoClient != null && !this.dbName.equals(dbName)) {
 			this.dbName = dbName;
 			db = mongoClient.getDatabase(dbName);
@@ -155,66 +202,8 @@ public class ChanterApplication implements ChanterServer {
 			loadModules();
 		}
 	}
-	
-	@GET
-	public List<ModuleSummary> getModules() {
-		List<ModuleSummary> summaries = new ArrayList<>();
-		modules.forEach(m -> {
-			ModuleSummary summary = new ModuleSummary();
-			summary.setGuid(m.getGuid());
-			summary.setName(m.getName());
-			summary.setDescription(m.getDescription());
-			summary.setAttributes(m.getAttributes());
-			summaries.add(summary);
-			
-			List<BaselineSummary> baselines = new ArrayList<>();
-			m.getBaselines().forEach(b -> {
-				BaselineSummary baseline = new BaselineSummary();
-				baseline.setGuid(b.getGuid());
-				baseline.setName(b.getName());
-				baseline.setReqCount(b.getReqIds().size());
-				
-				baselines.add(baseline);
-			});
-			summary.setBaselines(baselines);
-		});
-		
-		return summaries;
-	}
 
-	@GET
-	@Path("{moduleName}")
-	public Module findModuleByName(@PathParam("moduleName") String name) {
-		for (Module m : modules) {
-			if (m.getName().equals(name)) {
-				return m;
-			}
-		}
-		return null;
-	}
-
-    @POST
-	@Consumes("application/json")
-    public Module createModule(Module module) throws ChanterException {
-		// Check for duplicate names
-		for (Module m : modules) {
-			if (m.getName().equalsIgnoreCase(module.getName())) {
-				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
-			}
-		}
-		
-		if (db != null) {
-			logger.info("Creating Mongo Collection {}", module.getName());
-			db.createCollection(module.getName());
-			persistModuleProperties(module);
-		} else {
-			module.setGuid(UUID.randomUUID().toString());
-		}
-		modules.add(module);
-		return module;
-	}
-
-	// For each collection in the Mongo database, read the modules
+    // For each collection in the Mongo database, read the modules
 	private void loadModules() {
 		// Find all collections and load them into modules
 		if (db != null) {
@@ -229,15 +218,15 @@ public class ChanterApplication implements ChanterServer {
 		}
 	}
 
-	class ModuleClosure {
+    class ModuleClosure {
 		Module module;
 
 		public ModuleClosure(Module value) {
 			this.module = value;
 		}
 	}
-
-	// Reading a module may take a long time, so we may have to use threads here.
+    
+    // Reading a module may take a long time, so we may have to use threads here.
 	private Module readModuleFromDb(String name) {
 		Module m = null;
 		MongoCollection<Document> coll = db.getCollection(name);
@@ -302,6 +291,35 @@ public class ChanterApplication implements ChanterServer {
 		return m;
 	}
 
+	public void addParser(ChanterParser parser) {
+		if (parsers == null) {
+			parsers = new ArrayList<>();
+		}
+		parsers.add(parser);
+	}
+
+	@POST
+	@Consumes("application/json")
+	@Override
+	public Module createModule(Module module) throws ChanterException {
+		// Check for duplicate names
+		for (Module m : modules) {
+			if (m.getName().equalsIgnoreCase(module.getName())) {
+				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
+			}
+		}
+
+		if (db != null) {
+			logger.info("Creating Mongo Collection {}", module.getName());
+			db.createCollection(module.getName());
+			persistModuleProperties(module);
+		} else {
+			module.setGuid(UUID.randomUUID().toString());
+		}
+		modules.add(module);
+		return module;
+	}
+
 	// Convert a Module object to Document
 	private Document convertModuleToDocument(Module m) {
 		Document props = new Document("type", "Properties")
@@ -356,7 +374,7 @@ public class ChanterApplication implements ChanterServer {
 						.append("version", r.getVersion())
 						.append("deleted", r.getDeleted())
 						.append("description", r.getText());
-				
+
 				if (r.getUpdated() != null) {
 					requirement.append(UPDATED_ON, r.getUpdated());
 				}
@@ -368,14 +386,14 @@ public class ChanterApplication implements ChanterServer {
 				// Update the old requirement
 				if (r.getVersion() > 1) {
 					Document filter = new Document("_id", new ObjectId(r.getGuid()));
-					Document  doc = new Document("deleted", true)
+					Document doc = new Document("deleted", true)
 							.append(UPDATED_ON, r.getUpdated());
 					Document setDoc = new Document("$set", doc);
-					
+
 					collection.updateOne(filter, setDoc);
 				}
 				collection.insertOne(requirement);
-				
+
 				r.setGuid(requirement.get("_id").toString());
 			}
 		} else {
@@ -387,10 +405,10 @@ public class ChanterApplication implements ChanterServer {
 		if (collection != null) {
 			Document blDoc = new Document().append("type", "Baseline").append("name", bl.getName());
 			StringBuilder builder = new StringBuilder();
-			for (String id: bl.getReqIds()) {
+			for (String id : bl.getReqIds()) {
 				builder.append(id).append(",");
 			}
-			
+
 			blDoc.append("ids", builder.toString());
 			if (bl.getGuid() != null) {
 				collection.replaceOne(new Document("_id", new ObjectId(bl.getGuid())), blDoc);
@@ -403,8 +421,9 @@ public class ChanterApplication implements ChanterServer {
 		}
 	}
 
-  @DELETE
+	@DELETE
 	@Path("{moduleName}")
+	@Override
 	public Module deleteModule(String name) throws ChanterException {
 		Module m = findModuleByName(name);
 		if (m != null) {
@@ -414,16 +433,18 @@ public class ChanterApplication implements ChanterServer {
 			}
 			modules.remove(m);
 		} else {
-			throw new ChanterException("Module name '" + name + "' not found. Delete Module operation will not proceed.");
+			throw new ChanterException(
+					"Module name '" + name + "' not found. Delete Module operation will not proceed.");
 		}
-		
+
 		return m;
 	}
 
-  @GET
+	@GET
 	@Path("{moduleName}/baselines/{baselineName}")
-    public List<RObject> getRequirementsForBaseline(
-			@PathParam("moduleName") String moduleName, 
+	@Override
+	public List<RObject> getRequirementsForBaseline(
+			@PathParam("moduleName") String moduleName,
 			@PathParam("baselineName") String baselineName) {
 		Module m = findModuleByName(moduleName);
 		if (m != null) {
@@ -438,10 +459,11 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-  @GET
+	@GET
 	@Path("{name}/requirements/{rid}")
+	@Override
 	public RObject getRequirementByIdForModule(
-			@PathParam("name") String name, 
+			@PathParam("name") String name,
 			@PathParam("rid") String rid) {
 		Module m = findModuleByName(name);
 		if (m != null) {
@@ -454,9 +476,10 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-  @POST
+	@POST
 	@Consumes("application/json")
 	@Path("{name}")
+	@Override
 	public RObject createRequirementInModule(String name, RObject r) {
 		Module m = findModuleByName(name);
 		if (m != null) {
@@ -478,9 +501,10 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-  @POST
+	@POST
 	@Consumes("application/json")
 	@Path("{name}/baselines")
+	@Override
 	public Baseline createBaseline(@PathParam("name") String modName, String blName, String description) {
 		Module m = findModuleByName(modName);
 		if (m != null) {
@@ -494,9 +518,10 @@ public class ChanterApplication implements ChanterServer {
 		return null;
 	}
 
-  @PATCH
+	@PATCH
 	@Consumes("application/json")
 	@Path("{name}/requirements")
+	@Override
 	public RObject updateRequirementInModule(@PathParam("name") String name, RObject r) throws ChanterException {
 		Module m = findModuleByName(name);
 		if (m != null) {
@@ -526,10 +551,12 @@ public class ChanterApplication implements ChanterServer {
 				persistBaseline(collection, m.getCurrentBaseline());
 				return newR;
 			} else {
-				throw new ChanterException("Requirement with id '" + r.getGuid() + "' not found. Update Requirement operation will not proceed.");
+				throw new ChanterException("Requirement with id '" + r.getGuid()
+						+ "' not found. Update Requirement operation will not proceed.");
 			}
 		} else {
-			throw new ChanterException("Module name '" + name + "' not found. Delete Module operation will not proceed.");
+			throw new ChanterException(
+					"Module name '" + name + "' not found. Delete Module operation will not proceed.");
 		}
 	}
 
@@ -540,9 +567,10 @@ public class ChanterApplication implements ChanterServer {
 		return m.getAttributes();
 	}
 
-  @PUT
+	@PUT
 	@Consumes("application/json")
 	@Path("{name}/attributes")
+	@Override
 	public void saveAttribute(@PathParam("name") String moduleName, @FormParam("attName") String attName,
 			@FormParam("attType") String attType, @FormParam("attDefaultValue") String attDefaultValue) {
 		Module m = findModuleByName(moduleName);
@@ -554,8 +582,9 @@ public class ChanterApplication implements ChanterServer {
 		}
 	}
 
-  @DELETE
+	@DELETE
 	@Path("{name}/attributes/{attName}")
+	@Override
 	public void deleteAttribute(@PathParam("name") String moduleName, @PathParam("attName") String attName) {
 		Module m = findModuleByName(moduleName);
 		if (m != null) {
@@ -570,20 +599,23 @@ public class ChanterApplication implements ChanterServer {
 	}
 
 	/**
-	 * We want this method to return immediately and generate events that the application will listen to.
+	 * We want this method to return immediately and generate events that the
+	 * application will listen to.
 	 */
 	@POST
 	@Path("{name}/import/{type}")
 	@Consumes(MediaType.WILDCARD)
-	public ModuleSummary importFile(@PathParam("name") String moduleName, @PathParam("type") String type, byte[] rawdata) 
-		throws ChanterParserException {
+	@Override
+	public ModuleSummary importFile(@PathParam("name") String moduleName, @PathParam("type") String type,
+			byte[] rawdata)
+			throws ChanterParserException {
 		if (rawdata == null) {
 			throw new ChanterParserException("Data is empty - no import will occur.");
 		}
 		if (parsers != null && parsers.size() > 0) {
 			// find the correct parser
 			ChanterParser parser = null;
-			for (ChanterParser p  : parsers) {
+			for (ChanterParser p : parsers) {
 				if (p.getType().equalsIgnoreCase(type)) {
 					parser = p;
 					break;
@@ -597,11 +629,11 @@ public class ChanterApplication implements ChanterServer {
 					OutputStream os = new FileOutputStream(new File(randomFileName));
 					os.write(rawdata);
 					os.flush();
-			        os.close();
+					os.close();
 				} catch (IOException ioe) {
 					logger.error("Could not write file to container: {}", ioe.getMessage());
 				}
-			        
+
 				// Check if we're interested in events
 				if (parserListener != null) {
 					// raise events
@@ -610,22 +642,16 @@ public class ChanterApplication implements ChanterServer {
 				parser.parse(randomFileName);
 				ModuleSummary summary = new ModuleSummary();
 				summary.setName(moduleName);
-				summary.setDescription("Import Module from " + type + " file.\nFile is stored in " + randomFileName + ".");
+				summary.setDescription(
+						"Import Module from " + type + " file.\nFile is stored in " + randomFileName + ".");
 				return summary;
-				
+
 			} else {
 				throw new ChanterParserException("No parser found for file type " + type + ".");
 			}
-			
+
 		} else {
 			throw new ChanterParserException("No parsers are configured.");
 		}
-	}
-
-	public void addParser(ChanterParser parser) {
-		if (parsers == null) {
-			parsers = new ArrayList<>();
-		}
-		parsers.add(parser);
 	}
 }
