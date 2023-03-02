@@ -29,6 +29,8 @@ import org.bson.types.ObjectId;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,6 +72,7 @@ import com.mongodb.client.MongoDatabase;
         "mongoUri=mongoUri", 
         "databaseName=databaseName"
     })
+
 public class ChanterApplication implements ChanterServer {
     // New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
@@ -83,6 +86,9 @@ public class ChanterApplication implements ChanterServer {
 
 	//@Reference(policy = ReferencePolicy.DYNAMIC)
 	volatile private List<ChanterParser> parsers = null;
+
+	// @Reference(policy = ReferencePolicy.STATIC)
+	// private CorsFilter corsFilter = null;;
 
 	private ChanterParseEventListener parserListener = null;
 
@@ -115,51 +121,7 @@ public class ChanterApplication implements ChanterServer {
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}
-    }
-
-    @GET
-	@Path("{moduleName}")
-	@Produces(MediaType.APPLICATION_JSON)
-    @Override
-	public Module findModuleByName(@PathParam("moduleName") String name) {
-		logger.info("Find module by name {}", name);
-		for (Module m : modules) {
-			if (m.getName().equals(name)) {
-				return m;
-			}
-		}
-		return null;
-	}
-
-    @GET
-    @Path("/")
-    @Produces(MediaType.APPLICATION_JSON)
-    @Override
-    public List<ModuleSummary> getModules() {
-        logger.info("Retrieving all modules");
-		List<ModuleSummary> summaries = new ArrayList<>();
-		modules.forEach(m -> {
-			ModuleSummary summary = new ModuleSummary();
-			summary.setGuid(m.getGuid());
-			summary.setName(m.getName());
-			summary.setDescription(m.getDescription());
-			summary.setAttributes(m.getAttributes());
-			summaries.add(summary);
-
-			List<BaselineSummary> baselines = new ArrayList<>();
-			m.getBaselines().forEach(b -> {
-				BaselineSummary baseline = new BaselineSummary();
-				baseline.setGuid(b.getGuid());
-				baseline.setName(b.getName());
-				baseline.setReqCount(b.getReqIds().size());
-
-				baselines.add(baseline);
-			});
-			summary.setBaselines(baselines);
-		});
-
-		return summaries;
-    }
+    }    
 
     @Activate
 	@Modified
@@ -298,28 +260,6 @@ public class ChanterApplication implements ChanterServer {
 		parsers.add(parser);
 	}
 
-	@POST
-	@Consumes("application/json")
-	@Override
-	public Module createModule(Module module) throws ChanterException {
-		// Check for duplicate names
-		for (Module m : modules) {
-			if (m.getName().equalsIgnoreCase(module.getName())) {
-				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
-			}
-		}
-
-		if (db != null) {
-			logger.info("Creating Mongo Collection {}", module.getName());
-			db.createCollection(module.getName());
-			persistModuleProperties(module);
-		} else {
-			module.setGuid(UUID.randomUUID().toString());
-		}
-		modules.add(module);
-		return module;
-	}
-
 	// Convert a Module object to Document
 	private Document convertModuleToDocument(Module m) {
 		Document props = new Document("type", "Properties")
@@ -419,6 +359,81 @@ public class ChanterApplication implements ChanterServer {
 		} else {
 			bl.setGuid(UUID.randomUUID().toString());
 		}
+	}
+
+	public void closeMongoDatabase() {
+		mongoClient.close();
+		db = null;
+	}
+
+	/**
+	 * These are the rest methods
+	 */
+
+	@GET
+	@Path("{moduleName}")
+	@Produces(MediaType.APPLICATION_JSON)
+    @Override
+	public Module findModuleByName(@PathParam("moduleName") String name) {
+		logger.info("Find module by name {}", name);
+		for (Module m : modules) {
+			if (m.getName().equals(name)) {
+				return m;
+			}
+		}
+		return null;
+	}
+
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Override
+    public List<ModuleSummary> getModules() {
+        logger.info("Retrieving all modules");
+		List<ModuleSummary> summaries = new ArrayList<>();
+		modules.forEach(m -> {
+			ModuleSummary summary = new ModuleSummary();
+			summary.setGuid(m.getGuid());
+			summary.setName(m.getName());
+			summary.setDescription(m.getDescription());
+			summary.setAttributes(m.getAttributes());
+			summaries.add(summary);
+
+			List<BaselineSummary> baselines = new ArrayList<>();
+			m.getBaselines().forEach(b -> {
+				BaselineSummary baseline = new BaselineSummary();
+				baseline.setGuid(b.getGuid());
+				baseline.setName(b.getName());
+				baseline.setReqCount(b.getReqIds().size());
+
+				baselines.add(baseline);
+			});
+			summary.setBaselines(baselines);
+		});
+
+		return summaries;
+    }
+
+	@POST
+	@Consumes("application/json")
+	@Override
+	public Module createModule(Module module) throws ChanterException {
+		// Check for duplicate names
+		for (Module m : modules) {
+			if (m.getName().equalsIgnoreCase(module.getName())) {
+				throw new ChanterException("Module name '" + module.getName() + "' already exists!");
+			}
+		}
+
+		if (db != null) {
+			logger.info("Creating Mongo Collection {}", module.getName());
+			db.createCollection(module.getName());
+			persistModuleProperties(module);
+		} else {
+			module.setGuid(UUID.randomUUID().toString());
+		}
+		modules.add(module);
+		return module;
 	}
 
 	@DELETE
@@ -593,12 +608,7 @@ public class ChanterApplication implements ChanterServer {
 		}
 	}
 
-	public void closeMongoDatabase() {
-		mongoClient.close();
-		db = null;
-	}
-
-	/**
+		/**
 	 * We want this method to return immediately and generate events that the
 	 * application will listen to.
 	 */
