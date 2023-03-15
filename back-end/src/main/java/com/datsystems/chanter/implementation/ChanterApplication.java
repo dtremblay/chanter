@@ -62,6 +62,7 @@ import com.mongodb.client.MongoDatabase;
  */
 
 @Path("/chanter")
+@Produces(MediaType.APPLICATION_JSON)
 @Component(
     service = ChanterApplication.class, 
     configurationPid = "chanter-backend", 
@@ -72,7 +73,6 @@ import com.mongodb.client.MongoDatabase;
         "mongoUri=mongoUri", 
         "databaseName=databaseName"
     })
-
 public class ChanterApplication implements ChanterServer {
     // New logger
 	private static final Logger logger = LoggerFactory.getLogger(ChanterApplication.class.getName());
